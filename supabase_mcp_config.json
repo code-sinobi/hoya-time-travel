@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "hoya-supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-supabase"
+      ],
+      "env": {
+        "SUPABASE_URL": "https://xhczvfhoygzhsnbncker.supabase.co",
+        "SUPABASE_KEY": "sbp_cdc2ee57017b6fe9e72372e8e6b210c70add28b0"
+      }
+    }
+  }
+}
