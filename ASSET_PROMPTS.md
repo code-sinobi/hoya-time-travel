@@ -93,7 +93,7 @@ Save files as: `assets/stories/sXX_shortname.jpg` (e.g., `s01_coyote.jpg`).
 > American folklore art, a strong man swinging a hammer against a railroad spike, steam engine in background, sweat and grit, dramatic lighting, industrial age vibe --ar 9:16
 
 **s27_baba.jpg**
-> Dark fairytale art, a wooden hut standing on giant chicken legs in a birthday forest, glowing skulls on fence, mysterious atmosphere, twilight --ar 9:16
+> Dark fairytale art, a wooden hut standing on giant chicken legs in a birch forest, glowing skulls on fence, mysterious atmosphere, twilight --ar 9:16
 
 **s28_golem.jpg**
 > Gothic atmosphere, a giant clay figure standing in a cobblestone alley of old Prague, glowing hebrew letters on forehead, foggy night, gas lamps --ar 9:16
