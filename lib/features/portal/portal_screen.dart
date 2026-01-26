@@ -9,10 +9,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/galactic_colors.dart';
 import '../../core/widgets/temporal_hud.dart';
 import '../../core/widgets/temporal_nav_bar.dart';
+import '../../core/widgets/time_particles.dart';
 import 'widgets/time_portal_card.dart';
 import '../story/data/story_library.dart';
 import '../auth/services/profile_service.dart';
-import '../auth/services/auth_service.dart';
 
 class PortalScreen extends ConsumerStatefulWidget {
   const PortalScreen({super.key});
@@ -48,6 +48,27 @@ class _PortalScreenState extends ConsumerState<PortalScreen> {
         children: [
           // Galactic Background
           const GalacticBackground(showStars: true),
+
+          // Time Particles
+          const Positioned.fill(child: TimeParticles(count: 30)),
+
+          // Animated nebula overlay
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    GalacticColors.quantumPurple.withOpacity(0.1),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
 
           // Content
           Column(
