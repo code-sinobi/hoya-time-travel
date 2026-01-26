@@ -50,23 +50,25 @@ class OpenRouterService {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-          ..._appHeaders,
-        },
-        body: jsonEncode({
-          'model': model ?? _defaultModel,
-          'messages': [
-            {'role': 'system', 'content': systemPrompt},
-            {'role': 'user', 'content': userPrompt},
-          ],
-          'temperature': 0.7,
-          'max_tokens': 4096,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse(_baseUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
+              ..._appHeaders,
+            },
+            body: jsonEncode({
+              'model': model ?? _defaultModel,
+              'messages': [
+                {'role': 'system', 'content': systemPrompt},
+                {'role': 'user', 'content': userPrompt},
+              ],
+              'temperature': 0.7,
+              'max_tokens': 4096,
+            }),
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) {
         debugPrint(

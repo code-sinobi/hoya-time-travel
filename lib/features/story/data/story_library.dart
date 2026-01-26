@@ -369,7 +369,7 @@ const List<StoryMetadata> storyLibrary = [
     moral: 'Human Spirit',
     description:
         'The steel-driving man races against a steam drill, proving that the human spirit has value no machine can replace.',
-    imagePath: 'assets/stories/s26_henry.jpeg',
+    imagePath: 'assets/images/s26_henry.jpeg',
     primaryColor: Color(0xFF2C3E50),
     aiPrompt:
         'American folklore art, a strong man swinging a hammer against a railroad spike, steam engine in background, sweat and grit, dramatic lighting.',
@@ -382,7 +382,7 @@ const List<StoryMetadata> storyLibrary = [
     moral: 'Intuition',
     description:
         'Vasilisa must use her intuition to survive the tasks of the witch Baba Yaga in her chicken-legged hut.',
-    imagePath: 'assets/stories/s27_baba.jpeg',
+    imagePath: 'assets/images/s27_baba.jpeg',
     primaryColor: Color(0xFF5B2C6F),
     aiPrompt:
         'Dark fairytale art, a wooden hut standing on giant chicken legs in a birch forest, glowing skulls on fence, mysterious atmosphere.',
@@ -395,7 +395,7 @@ const List<StoryMetadata> storyLibrary = [
     moral: 'Hubris',
     description:
         'A rabbi creates a clay protector for his people, but learns the dangers of creating life without a soul.',
-    imagePath: 'assets/stories/s28_golem.jpeg',
+    imagePath: 'assets/images/s28_golem.jpeg',
     primaryColor: Color(0xFF7B7D7D),
     aiPrompt:
         'Gothic atmosphere, a giant clay figure standing in a cobblestone alley of old Prague, glowing hebrew letters on forehead, foggy night.',
@@ -408,7 +408,7 @@ const List<StoryMetadata> storyLibrary = [
     moral: 'Regret',
     description:
         'A cautionary tale of a weeping spirit, teaching the heavy weight of actions taken in anger.',
-    imagePath: 'assets/stories/s29_llorona.jpeg',
+    imagePath: 'assets/images/s29_llorona.jpeg',
     primaryColor: Color(0xFF17202A),
     aiPrompt:
         'Ghostly horror style, a weeping woman in a white dress standing by a river bank at night, translucent and ethereal, sorrowful mood.',
@@ -421,7 +421,7 @@ const List<StoryMetadata> storyLibrary = [
     moral: 'Loyalty',
     description:
         'The true story of a faithful dog who waited for his master every day for nine years, defining loyalty for a nation.',
-    imagePath: 'assets/stories/s30_hachiko.jpeg',
+    imagePath: 'assets/images/s30_hachiko.jpeg',
     primaryColor: Color(0xFFD35400),
     aiPrompt:
         'Vintage japanese photography style colorized, an Akita dog sitting patiently at a train station in snow, 1920s clothing in background, emotional.',

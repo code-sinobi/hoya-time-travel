@@ -32,6 +32,7 @@ dev_dependencies:
   riverpod_generator: ^2.4.0
 
 dependency_overrides:
+  # Override required to resolve version conflict between flutter_test and other dependencies
   test_api: 0.7.7
 
 flutter:
