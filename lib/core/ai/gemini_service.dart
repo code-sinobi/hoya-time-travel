@@ -67,18 +67,10 @@ class GeminiService {
 
   String _cleanJson(String text) {
     text = text.trim();
-    if (text.startsWith('```json')) {
-      text = text.substring(7);
-    }
-    if (text.startsWith('```')) {
-      text = text.substring(3);
-    }
-    if (text.startsWith('```')) {
-      text = text.substring(3);
-    }
-    if (text.endsWith('```')) {
-      text = text.substring(0, text.length - 3);
-    }
+    // Remove leading ```json or ``` with optional whitespace/newline
+    text = text.replaceFirst(RegExp(r'^```(?:json)?\s*'), '');
+    // Remove trailing ```
+    text = text.replaceFirst(RegExp(r'\s*```$'), '');
     return text.trim();
   }
 }
