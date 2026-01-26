@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'services/auth_service.dart';
+import '../../core/widgets/galactic_background.dart';
 import '../../core/theme/era_theme.dart';
 import '../../core/errors/error_handler.dart';
 import '../../core/errors/app_exceptions.dart';
@@ -142,16 +143,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [theme.backgroundColor, theme.surfaceColor],
-              ),
-            ),
-          ),
+          // Galactic Background
+          const GalacticBackground(showStars: true),
 
           Center(
             child: SingleChildScrollView(

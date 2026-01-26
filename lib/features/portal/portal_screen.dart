@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/widgets/galactic_background.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/era_theme.dart';
@@ -42,17 +43,8 @@ class _PortalScreenState extends ConsumerState<PortalScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background
-          AnimatedContainer(
-            duration: 500.ms,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [theme.backgroundColor, theme.surfaceColor],
-              ),
-            ),
-          ),
+          // Galactic Background
+          const GalacticBackground(showStars: true),
 
           // Content
           Column(

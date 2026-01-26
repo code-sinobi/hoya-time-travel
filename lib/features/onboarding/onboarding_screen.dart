@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/router/routes.dart';
 import '../../core/theme/era_theme.dart';
+import '../../core/widgets/galactic_background.dart';
 import '../../core/providers/shared_preferences_provider.dart';
 import 'data/onboarding_content.dart';
 import 'widgets/onboarding_page.dart';
@@ -65,94 +66,92 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isLastPage = _currentPage == onboardingPages.length - 1;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [theme.backgroundColor, theme.surfaceColor],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Top bar with Skip button
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(width: 80), // Spacer for centering
-                    const Spacer(),
-                    TextButton(
-                      onPressed: _skip,
-                      child: Text(
-                        'SKIP',
-                        style: theme.bodyStyle.copyWith(
-                          color: theme.secondaryColor,
-                          fontSize: 14,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // PageView
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  itemCount: onboardingPages.length,
-                  itemBuilder: (context, index) {
-                    return OnboardingPage(data: onboardingPages[index]);
-                  },
-                ),
-              ),
-
-              // Bottom section with indicator and button
-              Padding(
-                padding: const EdgeInsets.all(40.0),
-                child: Column(
-                  children: [
-                    // Page indicator
-                    PageIndicator(
-                      currentPage: _currentPage,
-                      pageCount: onboardingPages.length,
-                      activeColor: theme.primaryColor,
-                      inactiveColor: theme.primaryColor.withValues(alpha: 0.3),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Next/Done button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _next,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.primaryColor,
-                          foregroundColor: theme.backgroundColor,
-                          shape: theme.buttonShape,
-                        ),
+      body: Stack(
+        children: [
+          const GalacticBackground(showStars: true),
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar with Skip button
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 80), // Spacer for centering
+                      const Spacer(),
+                      TextButton(
+                        onPressed: _skip,
                         child: Text(
-                          isLastPage ? 'GET STARTED' : 'NEXT',
-                          style: theme.headlineStyle.copyWith(
-                            fontSize: 16,
-                            color: theme.backgroundColor,
-                            letterSpacing: 2,
+                          'SKIP',
+                          style: theme.bodyStyle.copyWith(
+                            color: theme.secondaryColor,
+                            fontSize: 14,
+                            letterSpacing: 1.5,
                           ),
                         ),
                       ),
-                    ).animate().fadeIn(delay: 600.ms),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                // PageView
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    itemCount: onboardingPages.length,
+                    itemBuilder: (context, index) {
+                      return OnboardingPage(data: onboardingPages[index]);
+                    },
+                  ),
+                ),
+
+                // Bottom section with indicator and button
+                Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Column(
+                    children: [
+                      // Page indicator
+                      PageIndicator(
+                        currentPage: _currentPage,
+                        pageCount: onboardingPages.length,
+                        activeColor: theme.primaryColor,
+                        inactiveColor: theme.primaryColor.withValues(
+                          alpha: 0.3,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Next/Done button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _next,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.primaryColor,
+                            foregroundColor: theme.backgroundColor,
+                            shape: theme.buttonShape,
+                          ),
+                          child: Text(
+                            isLastPage ? 'GET STARTED' : 'NEXT',
+                            style: theme.headlineStyle.copyWith(
+                              fontSize: 16,
+                              color: theme.backgroundColor,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ).animate().fadeIn(delay: 600.ms),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
