@@ -26,7 +26,7 @@ class OpenRouterService {
   final String apiKey;
   static const String _baseUrl =
       'https://openrouter.ai/api/v1/chat/completions';
-  static const String _defaultModel = 'z-ai/glm-4.5-air:free';
+  static const String _defaultModel = 'google/gemma-3n-e4b-it:free';
 
   // App attribution headers for OpenRouter leaderboards
   static const Map<String, String> _appHeaders = {
