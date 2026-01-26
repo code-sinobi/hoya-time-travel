@@ -45,7 +45,6 @@ lib/
 │       ├── domain/      # Models
 │       ├── services/    # Business logic
 │       └── widgets/     # Story UI components
-│       └── widgets/     # Story UI components
 └── main.dart
 ```
 
