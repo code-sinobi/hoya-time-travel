@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Secrets
+supabase_mcp_config.json
+.env
+
+# Flutter Ephemeral
+**/ephemeral/
+**/ephemeral
+windows/flutter/ephemeral/
+linux/flutter/ephemeral/
+macos/Flutter/ephemeral/

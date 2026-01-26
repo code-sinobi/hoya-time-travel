@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'era_theme.dart';
 
 part 'app_theme.g.dart';
@@ -30,16 +31,17 @@ ThemeData appTheme(Ref ref) {
 
   return ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: eraTheme.primaryColor,
-      brightness: Brightness.dark,
-      // Deprecated usage fixed below
-      surface: eraTheme.surfaceColor,
-    ).copyWith(
-      // Ensure background is consistent with scaffoldBackgroundColor if needed, 
-      // though scaffoldBackgroundColor is set explicitly below.
-      surface: eraTheme.surfaceColor,
-    ),
+    colorScheme:
+        ColorScheme.fromSeed(
+          seedColor: eraTheme.primaryColor,
+          brightness: Brightness.dark,
+          // Deprecated usage fixed below
+          surface: eraTheme.surfaceColor,
+        ).copyWith(
+          // Ensure background is consistent with scaffoldBackgroundColor if needed,
+          // though scaffoldBackgroundColor is set explicitly below.
+          surface: eraTheme.surfaceColor,
+        ),
     extensions: [eraTheme],
     scaffoldBackgroundColor: eraTheme.backgroundColor,
     textTheme: TextTheme(

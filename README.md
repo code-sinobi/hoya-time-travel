@@ -239,4 +239,60 @@ Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTIN
 
 ---
 
+[{
+	"resource": "/C:/hoya-app/lib/features/story/services/story_service.g.dart",
+	"owner": "_generated_diagnostic_collection_name_#6",
+	"code": {
+		"value": "invalid_override",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/invalid_override",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 8,
+	"message": "'StoryServiceProvider.$createElement' ('$ProviderElement<StoryService> Function($ProviderPointer)') isn't a valid override of '$NotifierProvider.$createElement' ('$NotifierProviderElement<StoryService, void> Function($ProviderPointer)').",
+	"source": "dart",
+	"startLineNumber": 32,
+	"startColumn": 34,
+	"endLineNumber": 32,
+	"endColumn": 48,
+	"relatedInformation": [
+		{
+			"startLineNumber": 58,
+			"startColumn": 47,
+			"endLineNumber": 58,
+			"endColumn": 61,
+			"message": "The member being overridden.",
+			"resource": "/C:/Users/Build.Core/AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-3.2.0/lib/src/providers/notifier.dart"
+		}
+	],
+	"origin": "extHost1"
+},{
+	"resource": "/C:/hoya-app/pubspec.yaml",
+	"owner": "_generated_diagnostic_collection_name_#6",
+	"code": "asset_directory_does_not_exist",
+	"severity": 4,
+	"message": "The asset directory 'assets/images/' doesn't exist.\nTry creating the directory or fixing the path to the directory.",
+	"source": "dart",
+	"startLineNumber": 41,
+	"startColumn": 7,
+	"endLineNumber": 41,
+	"endColumn": 21,
+	"origin": "extHost1"
+},{
+	"resource": "/C:/hoya-app/pubspec.yaml",
+	"owner": "_generated_diagnostic_collection_name_#6",
+	"code": "asset_does_not_exist",
+	"severity": 4,
+	"message": "The asset file '.env' doesn't exist.\nTry creating the file or fixing the path to the file.",
+	"source": "dart",
+	"startLineNumber": 42,
+	"startColumn": 7,
+	"endLineNumber": 42,
+	"endColumn": 11,
+	"origin": "extHost1"
+}]
+
 **Made with Flutter** 🐦
