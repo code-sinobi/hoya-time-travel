@@ -62,6 +62,12 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
     // Clamp _currentPage to valid range
     final safeCurrentPage = _currentPage.clamp(0, widget.pages.length - 1);
     final currentData = widget.pages[safeCurrentPage];
+    // Use safe index for data access but still rely on _currentPage for some state if needed,
+    // though ideally everything should use the safe index if the list can shrink.
+    // However, the CodeRabbit suggestion specifically asked to use safeCurrentPage for:
+    // ValueKey, ControlDeck.currentPage, and isLastPage.
+
+    // We already have 'currentData' using safeCurrentPage.
 
     return AnimatedBuilder(
       animation: _transitionController,
@@ -120,7 +126,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
                             child: ChronoLens(
                               title: currentData.title,
                               description: currentData.description,
-                              key: ValueKey(_currentPage),
+                              key: ValueKey(safeCurrentPage),
                             ),
                           ),
                         ),
@@ -129,11 +135,11 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
 
                     // BOTTOM: Control Deck (Natural Size)
                     ControlDeck(
-                      currentPage: _currentPage,
+                      currentPage: safeCurrentPage,
                       totalPages: widget.pages.length,
                       onNext: _nextPage,
                       onSkip: widget.onComplete,
-                      isLastPage: _currentPage == widget.pages.length - 1,
+                      isLastPage: safeCurrentPage == widget.pages.length - 1,
                     ),
                   ],
                 ),
