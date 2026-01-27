@@ -41,7 +41,7 @@ class ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = GalacticColors.neonCyan.withOpacity(0.3)
+      ..color = GalacticColors.etherealCyan.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     for (var particle in particles) {
@@ -50,7 +50,8 @@ class ParticlePainter extends CustomPainter {
       var y = (particle.y - (time * particle.speed / 20.0)) % 1.0;
       if (y < 0) y += 1.0;
 
-      var x = particle.x; // Static x for 'rising' effect, or animate sine wave
+      final x =
+          particle.x; // Static x for 'rising' effect, or animate sine wave
 
       canvas.drawCircle(
         Offset(x * size.width, y * size.height),

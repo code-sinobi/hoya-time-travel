@@ -8,7 +8,14 @@ class Story {
   final String title;
   final String eraId;
   final String description;
-  final String heroImageUrl;
+  @JsonKey(name: 'hero_image_url')
+  final String? heroImageUrl;
+  @JsonKey(name: 'x_coordinate')
+  final double xCoordinate;
+  @JsonKey(name: 'y_coordinate')
+  final double yCoordinate;
+  @JsonKey(name: 'is_rift')
+  final bool isRift;
 
   Story({
     required this.id,
@@ -16,6 +23,9 @@ class Story {
     required this.eraId,
     required this.description,
     required this.heroImageUrl,
+    this.xCoordinate = 0.5,
+    this.yCoordinate = 0.5,
+    this.isRift = false,
   });
 
   factory Story.fromJson(Map<String, dynamic> json) => _$StoryFromJson(json);

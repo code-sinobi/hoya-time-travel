@@ -32,18 +32,18 @@ class _SciFiTextFieldState extends State<SciFiTextField> {
         onFocusChange: (focus) => setState(() => _isFocused = focus),
         child: Container(
           decoration: BoxDecoration(
-            color: GalacticColors.deepNebula.withOpacity(0.5),
+            color: GalacticColors.deepNebula.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: _isFocused
-                  ? GalacticColors.neonCyan
-                  : GalacticColors.wormholeBlue.withOpacity(0.5),
+                  ? GalacticColors.etherealCyan
+                  : GalacticColors.wormholeBlue.withValues(alpha: 0.5),
               width: 1,
             ),
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: GalacticColors.neonCyan.withOpacity(0.2),
+                      color: GalacticColors.etherealCyan.withValues(alpha: 0.2),
                       blurRadius: 10,
                       spreadRadius: 1,
                     ),
@@ -54,21 +54,25 @@ class _SciFiTextFieldState extends State<SciFiTextField> {
             controller: widget.controller,
             obscureText: widget.isPassword,
             onChanged: widget.onChanged,
-            style: GoogleFonts.exo2(color: Colors.white, fontSize: 16),
+            style: GoogleFonts.exo2(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               labelText: widget.label,
               labelStyle: GoogleFonts.orbitron(
-                color: _isFocused ? GalacticColors.neonCyan : Colors.white54,
+                color: _isFocused
+                    ? GalacticColors.etherealCyan
+                    : Colors.white54,
                 fontSize: 12,
               ),
               prefixIcon: Icon(
                 widget.prefixIcon,
-                color: _isFocused ? GalacticColors.neonCyan : Colors.white54,
+                color: _isFocused
+                    ? GalacticColors.etherealCyan
+                    : Colors.white54,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 12,
+                vertical: 10,
               ),
             ),
           ),

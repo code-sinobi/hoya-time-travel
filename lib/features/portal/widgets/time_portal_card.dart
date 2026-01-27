@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -85,7 +85,7 @@ class _TimePortalCardState extends State<TimePortalCard>
     // Basic era mapping or default colors
     final eraColors =
         GalacticColors.eraGradients[widget.story.era.toLowerCase()] ??
-        [GalacticColors.neonCyan, GalacticColors.wormholeBlue];
+        [GalacticColors.etherealCyan, GalacticColors.wormholeBlue];
 
     return GestureDetector(
       onLongPressStart: (_) => _startCharging(),
@@ -99,7 +99,13 @@ class _TimePortalCardState extends State<TimePortalCard>
           return Transform(
             transform: Matrix4.identity()
               ..rotateY(_rotation.value)
-              ..scale(_scale.value),
+              ..multiply(
+                Matrix4.diagonal3Values(
+                  _scale.value,
+                  _scale.value,
+                  _scale.value,
+                ),
+              ),
             alignment: Alignment.center,
             child: Container(
               margin: const EdgeInsets.all(12),
@@ -109,27 +115,27 @@ class _TimePortalCardState extends State<TimePortalCard>
                   center: Alignment.center,
                   radius: 1.2,
                   colors: [
-                    eraColors[0].withOpacity(0.8),
-                    eraColors[1].withOpacity(0.6),
-                    GalacticColors.spaceBlack.withOpacity(0.9),
+                    eraColors[0].withValues(alpha: 0.8),
+                    eraColors[1].withValues(alpha: 0.6),
+                    GalacticColors.spaceBlack.withValues(alpha: 0.9),
                   ],
                 ),
                 border: Border.all(
-                  color: GalacticColors.temporalGold.withOpacity(_glow.value),
+                  color: GalacticColors.temporalGold.withValues(
+                    alpha: _glow.value,
+                  ),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: GalacticColors.neonCyan.withOpacity(
-                      0.25,
-                    ), // Reduced glow intensity for perf
-                    blurRadius: 20,
-                    spreadRadius: 2,
+                    color: GalacticColors.etherealCyan.withValues(alpha: 0.25),
+                    blurRadius: 15,
+                    // spreadRadius: 2, // Removed for perf
                   ),
                   BoxShadow(
-                    color: eraColors[0].withOpacity(_glow.value * 0.5),
-                    blurRadius: 30,
-                    spreadRadius: 5,
+                    color: eraColors[0].withValues(alpha: _glow.value * 0.4),
+                    blurRadius: 20,
+                    // spreadRadius: 5, // Removed for perf
                   ),
                 ],
               ),
@@ -138,13 +144,12 @@ class _TimePortalCardState extends State<TimePortalCard>
                   // Story content
                   _buildStoryContent(eraColors),
 
-                  // Portal overlay effect
+                  // Portal overlay effect (Optimized)
                   Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(color: Colors.black.withOpacity(0.3)),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        color: Colors.black.withValues(alpha: 0.3),
                       ),
                     ),
                   ),
@@ -186,13 +191,22 @@ class _TimePortalCardState extends State<TimePortalCard>
           const SizedBox(height: 16),
 
           // Title
-          Text(
-            widget.story.title,
-            style: GoogleFonts.orbitron(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              shadows: [Shadow(blurRadius: 10, color: GalacticColors.neonCyan)],
+          Flexible(
+            child: Text(
+              widget.story.title,
+              style: GoogleFonts.orbitron(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                shadows: [
+                  const Shadow(
+                    blurRadius: 10,
+                    color: GalacticColors.etherealCyan,
+                  ),
+                ],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
 
@@ -201,7 +215,7 @@ class _TimePortalCardState extends State<TimePortalCard>
           // Wisdom
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.auto_awesome,
                 color: GalacticColors.temporalGold,
                 size: 16,
@@ -212,7 +226,7 @@ class _TimePortalCardState extends State<TimePortalCard>
                   'Wisdom: ${widget.story.moral}',
                   style: GoogleFonts.exo2(
                     fontSize: 14,
-                    color: GalacticColors.starWhite.withOpacity(0.9),
+                    color: GalacticColors.starWhite.withValues(alpha: 0.9),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -223,17 +237,20 @@ class _TimePortalCardState extends State<TimePortalCard>
           const SizedBox(height: 16),
 
           // Description
+          // Description
           Expanded(
             child: Text(
               widget.story.description,
               style: GoogleFonts.exo2(
                 fontSize: 14,
-                color: GalacticColors.starWhite.withOpacity(0.7),
+                color: GalacticColors.starWhite.withValues(alpha: 0.7),
               ),
-              maxLines: 3,
+              maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
           ),
+
+          const SizedBox(height: 16),
 
           // Portal entry hint
           Align(
@@ -241,13 +258,17 @@ class _TimePortalCardState extends State<TimePortalCard>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.timer, color: GalacticColors.neonCyan, size: 14),
+                const Icon(
+                  Icons.timer,
+                  color: GalacticColors.etherealCyan,
+                  size: 14,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'LONG PRESS TO ENTER',
                   style: GoogleFonts.orbitron(
                     fontSize: 10,
-                    color: GalacticColors.neonCyan,
+                    color: GalacticColors.etherealCyan,
                   ),
                 ),
               ],
@@ -268,7 +289,9 @@ class _TimePortalCardState extends State<TimePortalCard>
             value: _chargeProgress,
             strokeWidth: 4,
             backgroundColor: GalacticColors.deepNebula,
-            valueColor: AlwaysStoppedAnimation(GalacticColors.neonCyan),
+            valueColor: const AlwaysStoppedAnimation(
+              GalacticColors.etherealCyan,
+            ),
           ),
         ),
       ),

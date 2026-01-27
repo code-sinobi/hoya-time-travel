@@ -1,362 +1,206 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../core/theme/era_theme.dart';
-import '../../core/theme/app_theme.dart';
-import '../story/data/story_library.dart';
-import '../story/repositories/story_repository.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Explore screen for discovering eras, wisdom topics, and achievements
-class ExploreScreen extends ConsumerWidget {
+import '../../core/theme/era_theme.dart';
+import '../story/models/story_models.dart';
+import '../story/repositories/story_repository.dart';
+import 'widgets/astral_map_node.dart';
+import 'widgets/temporal_web_painter.dart';
+import 'widgets/timeline_scrubber.dart';
+
+final storiesProvider = FutureProvider<List<Story>>((ref) async {
+  return ref.watch(storyRepositoryProvider).getStories();
+});
+
+class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme =
-        Theme.of(context).extension<EraTheme>() ??
-        ref.watch(appThemeProvider).extension<EraTheme>()!;
-    final completedStories = ref.watch(completedStoryIdsProvider);
-    final textColor = theme.bodyStyle.color ?? Colors.white;
-
-    // Get unique eras and their story counts
-    final eraData = _getEraData();
-    final wisdomTopics = _getWisdomTopics();
-
-    return Scaffold(
-      backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Explore',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Discover wisdom across time',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: textColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Featured Wisdom Card
-              Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _FeaturedWisdomCard(theme: theme),
-                  )
-                  .animate()
-                  .fadeIn(delay: 100.ms, duration: 500.ms)
-                  .slideY(begin: 0.1),
-
-              const SizedBox(height: 32),
-
-              // Era Discovery Section
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: Text(
-                  'Journey Through Eras',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
-              ).animate().fadeIn(delay: 200.ms),
-
-              const SizedBox(height: 16),
-
-              SizedBox(
-                height: 160,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: eraData.length,
-                  itemBuilder: (context, index) {
-                    final era = eraData[index];
-                    return Padding(
-                          padding: EdgeInsets.only(
-                            right: index < eraData.length - 1 ? 16 : 0,
-                          ),
-                          child: completedStories.when(
-                            data: (completed) {
-                              final completedInEra = storyLibrary
-                                  .where(
-                                    (s) =>
-                                        s.era == era['name'] &&
-                                        completed.contains(s.id),
-                                  )
-                                  .length;
-                              return _EraCard(
-                                name: era['name'] as String,
-                                storyCount: era['count'] as int,
-                                completedCount: completedInEra,
-                                icon: era['icon'] as IconData,
-                                gradient: era['gradient'] as List<Color>,
-                                theme: theme,
-                              );
-                            },
-                            loading: () => _EraCard(
-                              name: era['name'] as String,
-                              storyCount: era['count'] as int,
-                              completedCount: 0,
-                              icon: era['icon'] as IconData,
-                              gradient: era['gradient'] as List<Color>,
-                              theme: theme,
-                            ),
-                            error: (_, _) => const SizedBox(),
-                          ),
-                        )
-                        .animate(delay: (250 + index * 100).ms)
-                        .fadeIn()
-                        .slideX(begin: 0.2);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Wisdom Topics Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Wisdom Topics',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
-              ).animate().fadeIn(delay: 400.ms),
-
-              const SizedBox(height: 16),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: wisdomTopics.asMap().entries.map((entry) {
-                    return _WisdomTopicChip(
-                          topic: entry.value,
-                          theme: theme,
-                          textColor: textColor,
-                        )
-                        .animate(delay: (450 + entry.key * 50).ms)
-                        .fadeIn()
-                        .scale(
-                          begin: const Offset(0.8, 0.8),
-                          end: const Offset(1, 1),
-                        );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Achievements Section
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Achievements',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                ),
-              ).animate().fadeIn(delay: 600.ms),
-
-              const SizedBox(height: 16),
-
-              completedStories
-                  .when(
-                    data: (completed) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: _AchievementsGrid(
-                        completedCount: completed.length,
-                        totalCount: storyLibrary.length,
-                        theme: theme,
-                        textColor: textColor,
-                      ),
-                    ),
-                    loading: () => const SizedBox(height: 100),
-                    error: (_, _) => const SizedBox(),
-                  )
-                  .animate()
-                  .fadeIn(delay: 650.ms),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Map<String, dynamic>> _getEraData() {
-    final eras = storyLibrary.map((s) => s.era).toSet().toList()..sort();
-    return eras.map((era) {
-      final count = storyLibrary.where((s) => s.era == era).length;
-      return {
-        'name': era,
-        'count': count,
-        'icon': _getEraIcon(era),
-        'gradient': _getEraGradient(era),
-      };
-    }).toList();
-  }
-
-  IconData _getEraIcon(String era) {
-    if (era.toLowerCase().contains('ancient')) return Icons.account_balance;
-    if (era.toLowerCase().contains('medieval')) return Icons.castle;
-    if (era.toLowerCase().contains('modern')) return Icons.location_city;
-    if (era.toLowerCase().contains('future')) return Icons.rocket_launch;
-    return Icons.auto_stories;
-  }
-
-  List<Color> _getEraGradient(String era) {
-    if (era.toLowerCase().contains('ancient')) {
-      return [const Color(0xFFD4A574), const Color(0xFF8B6914)];
-    }
-    if (era.toLowerCase().contains('medieval')) {
-      return [const Color(0xFF7B68EE), const Color(0xFF4B0082)];
-    }
-    if (era.toLowerCase().contains('modern')) {
-      return [const Color(0xFF00CED1), const Color(0xFF008B8B)];
-    }
-    if (era.toLowerCase().contains('future')) {
-      return [const Color(0xFF00D4FF), const Color(0xFF7B2CBF)];
-    }
-    return [const Color(0xFF667eea), const Color(0xFF764ba2)];
-  }
-
-  List<String> _getWisdomTopics() {
-    return storyLibrary.map((s) => s.moral).toSet().toList()..sort();
-  }
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _FeaturedWisdomCard extends StatelessWidget {
-  final EraTheme theme;
+class _ExploreScreenState extends ConsumerState<ExploreScreen>
+    with TickerProviderStateMixin {
+  final TransformationController _transformController =
+      TransformationController();
+  late AnimationController _pulseController;
 
-  const _FeaturedWisdomCard({required this.theme});
+  String _selectedEra = 'MYTHIC';
+
+  // Scanner State
+  bool _isScannerActive = false;
+  Offset _scannerPosition = Offset.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(vsync: this, duration: 3.seconds)
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Pick a random featured story
-    final featured = storyLibrary.isNotEmpty ? storyLibrary.first : null;
+    final storiesAsync = ref.watch(storiesProvider);
 
-    return Container(
-      height: 180,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [theme.primaryColor, theme.secondaryColor],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.primaryColor.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Stack(
+    return Scaffold(
+      backgroundColor: const Color(0xFF15151A),
+      body: Stack(
         children: [
-          // Decorative circles
-          Positioned(
-            top: -30,
-            right: -30,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -40,
-            left: -40,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
+          // 1. Map Layer (Interactive)
+          InteractiveViewer(
+            transformationController: _transformController,
+            boundaryMargin: const EdgeInsets.all(1000),
+            minScale: 0.5,
+            maxScale: 4.0,
+            panEnabled: !_isScannerActive,
+            child: storiesAsync.when(
+              data: (stories) {
+                return SizedBox(
+                  width: 1500,
+                  height: 1000,
+                  child: AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, _) {
+                      return Stack(
+                        children: [
+                          // Temporal Web Painter
+                          CustomPaint(
+                            size: const Size(1500, 1000),
+                            painter: TemporalWebPainter(
+                              color: MythicColors.bronze,
+                              activeEra: _selectedEra,
+                              nodes: stories,
+                              animationValue: _pulseController.value,
+                            ),
+                          ),
+                          // Scanner Lens
+                          if (_isScannerActive)
+                            Positioned(
+                              left: _scannerPosition.dx - 100,
+                              top: _scannerPosition.dy - 100,
+                              child:
+                                  Container(
+                                        width: 200,
+                                        height: 200,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.cyanAccent,
+                                            width: 2,
+                                          ),
+                                          gradient: RadialGradient(
+                                            colors: [
+                                              Colors.cyanAccent.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.cyanAccent
+                                                  .withValues(alpha: 0.2),
+                                              blurRadius: 20,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                      .animate(onPlay: (c) => c.repeat())
+                                      .rotate(duration: 5.seconds),
+                            ),
+                          // Nodes
+                          ..._buildNodes(stories),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => const SizedBox.shrink(),
             ),
           ),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(24),
+          // 2. Scanner Gesture Layer (Only when active)
+          if (_isScannerActive)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onPanUpdate: (d) {
+                  setState(() {
+                    debugPrint('Scanner Pan: ${d.delta}');
+                    // Map screen movement to map movement based on active scale
+                    final scale = _transformController.value
+                        .getMaxScaleOnAxis();
+                    _scannerPosition += d.delta / scale;
+                  });
+                },
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+
+          // 2. HUD Overlay
+          SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Featured Wisdom',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                // Header
+                _buildHeader(),
+
+                const Spacer(),
+
+                // Scanner Toggle
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 24, bottom: 24),
+                    child: FloatingActionButton.extended(
+                      backgroundColor: _isScannerActive
+                          ? Colors.cyanAccent
+                          : const Color(0xFF2A2A35),
+                      foregroundColor: _isScannerActive
+                          ? Colors.black
+                          : Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          _isScannerActive = !_isScannerActive;
+                          // Reset scanner to center of map if activating
+                          if (_isScannerActive) {
+                            _scannerPosition = const Offset(750, 500);
+                          }
+                        });
+                      },
+                      icon: Icon(
+                        _isScannerActive ? Icons.radar : Icons.radar_outlined,
+                      ),
+                      label: Text(
+                        _isScannerActive
+                            ? 'SCANNING ACTIVE'
+                            : 'ACTIVATE SCANNER',
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  featured != null
-                      ? '"${featured.moral}"'
-                      : '"Every journey begins with a single step."',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  featured != null ? '— ${featured.era}' : '— Ancient Wisdom',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 13,
-                    fontStyle: FontStyle.italic,
-                  ),
+
+                const Spacer(),
+
+                // Era Timeline Control (Bottom)
+                TimelineScrubber(
+                  selectedEra: _selectedEra,
+                  onEraChanged: (era) {
+                    setState(() => _selectedEra = era);
+                  },
                 ),
               ],
             ),
@@ -365,233 +209,234 @@ class _FeaturedWisdomCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _EraCard extends StatelessWidget {
-  final String name;
-  final int storyCount;
-  final int completedCount;
-  final IconData icon;
-  final List<Color> gradient;
-  final EraTheme theme;
+  // Helper to filter and build nodes
+  List<Widget> _buildNodes(List<Story> stories) {
+    // Filter Logic
+    final visibleStories = stories.where((s) {
+      if (_selectedEra == 'FUTURE') {
+        return true;
+      }
+      if (_selectedEra == 'MYTHIC') {
+        return s.eraId == 'MYTHIC' || s.eraId == 'ANCIENT';
+      }
+      if (_selectedEra == 'MODERN') {
+        return s.eraId == 'MODERN' || s.eraId == 'INDUSTRIAL';
+      }
+      return s.eraId == _selectedEra;
+    }).toList();
 
-  const _EraCard({
-    required this.name,
-    required this.storyCount,
-    required this.completedCount,
-    required this.icon,
-    required this.gradient,
-    required this.theme,
-  });
+    return visibleStories.map((story) {
+      // Scanner Logic
+      // If it's a "Hidden" node (let's say all Rifts are hidden by default unless scanned?),
+      // we check distance.
+      final bool isHidden = story.isRift && !_isNodeScanned(story);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient,
+      // Opacity
+      final double opacity = isHidden ? 0.0 : 1.0;
+
+      // If hidden, and scanner is close, show partial ghost?
+      double scannerOpacity = 0.0;
+      if (_isScannerActive) {
+        final nodePos = Offset(
+          story.xCoordinate * 1500,
+          story.yCoordinate * 1000,
+        );
+        final dist = (nodePos - _scannerPosition).distance;
+        if (dist < 100) {
+          // Lens radius
+          scannerOpacity = (1 - (dist / 100)).clamp(0.0, 1.0);
+        }
+      }
+
+      final finalOpacity = max(opacity, scannerOpacity);
+
+      return Positioned(
+        left: story.xCoordinate * 1500,
+        top: story.yCoordinate * 1000,
+        child: Opacity(
+          opacity: finalOpacity,
+          child: AstralMapNode(
+            data: {
+              'name': story.title,
+              'isRift': story.isRift,
+              'era': story.eraId,
+            },
+            isLocked:
+                isHidden &&
+                scannerOpacity < 0.8, // Lock interaction if not fully scanned
+            onTap: () {
+              if (finalOpacity > 0.5) _animateToNode(story);
+            },
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: gradient[0].withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+      );
+    }).toList();
+  }
+
+  bool _isNodeScanned(Story s) {
+    return false; // Everything requires scanning/visibility logic for Rifts
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'NAVIGATOR',
+                style: GoogleFonts.cinzelDecorative(
+                  fontSize: 32,
+                  color: _isScannerActive
+                      ? Colors.cyanAccent
+                      : MythicColors.bronze,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    const BoxShadow(color: Colors.black, blurRadius: 4),
+                  ],
+                ),
+              ),
+              Text(
+                _isScannerActive ? 'TEMPORAL SCANNING...' : 'ARCHIVE VII',
+                style: GoogleFonts.orbitron(
+                  fontSize: 12,
+                  color:
+                      (_isScannerActive
+                              ? Colors.cyanAccent
+                              : MythicColors.parchment)
+                          .withValues(alpha: 0.7),
+                  letterSpacing: 2,
+                ),
+              ).animate(target: _isScannerActive ? 1 : 0).shimmer(),
+            ],
+          ),
+          // Compass Icon
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color:
+                    (_isScannerActive ? Colors.cyanAccent : MythicColors.bronze)
+                        .withValues(alpha: 0.5),
+              ),
+              color: Colors.black26,
+            ),
+            child: Center(
+              child: Icon(
+                _isScannerActive ? Icons.radar : Icons.explore,
+                color: _isScannerActive
+                    ? Colors.cyanAccent
+                    : MythicColors.bronze,
+                size: 28,
+              ).animate(onPlay: (c) => c.repeat()).rotate(duration: 10.seconds),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    );
+  }
+
+  void _animateToNode(Story story) {
+    final targetScale = 2.0;
+    final x =
+        -(story.xCoordinate * 1000 * targetScale) +
+        (MediaQuery.of(context).size.width / 2);
+    final y =
+        -(story.yCoordinate * 1000 * targetScale) +
+        (MediaQuery.of(context).size.height / 2);
+
+    final matrix = Matrix4.identity()
+      ..setTranslationRaw(x, y, 0.0)
+      ..multiply(
+        Matrix4.diagonal3Values(targetScale, targetScale, targetScale),
+      );
+
+    final animation =
+        Matrix4Tween(begin: _transformController.value, end: matrix).animate(
+          CurvedAnimation(
+            parent: AnimationController(vsync: this, duration: 800.ms)
+              ..forward(),
+            curve: Curves.easeInOut,
+          ),
+        );
+
+    animation.addListener(() {
+      _transformController.value = animation.value;
+    });
+
+    _showNodeDetails(context, story);
+  }
+
+  void _showNodeDetails(BuildContext context, Story story) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF1A1A24),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: MythicColors.bronze, width: 2)),
+          boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+        ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.white, size: 32),
-            const Spacer(),
             Text(
-              name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
+              story.title.toUpperCase(),
+              style: GoogleFonts.cinzelDecorative(
+                fontSize: 24,
+                color: MythicColors.parchment,
                 fontWeight: FontWeight.bold,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '$completedCount / $storyCount completed',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 12,
               ),
             ),
             const SizedBox(height: 8),
-            // Progress bar
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: storyCount > 0 ? completedCount / storyCount : 0,
-                backgroundColor: Colors.white.withValues(alpha: 0.3),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 4,
+            Text(
+              'ERA: ${story.eraId}',
+              style: GoogleFonts.spaceMono(
+                color: MythicColors.bronze,
+                fontSize: 12,
               ),
             ),
+            const SizedBox(height: 16),
+            Text(
+              story.description,
+              style: GoogleFonts.exo2(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MythicColors.bronze,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: () {
+                  Navigator.pop(context); // Close modal
+                  if (story.isRift) {
+                    context.go('/rifts');
+                  } else {
+                    context.go('/story/${story.id}');
+                  }
+                },
+                child: Text(
+                  'INITIATE JUMP',
+                  style: GoogleFonts.cinzel(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-}
-
-class _WisdomTopicChip extends StatelessWidget {
-  final String topic;
-  final EraTheme theme;
-  final Color textColor;
-
-  const _WisdomTopicChip({
-    required this.topic,
-    required this.theme,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: theme.surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.primaryColor.withValues(alpha: 0.3)),
-      ),
-      child: Text(
-        topic,
-        style: TextStyle(
-          color: textColor.withValues(alpha: 0.85),
-          fontSize: 13,
-        ),
-      ),
-    );
-  }
-}
-
-class _AchievementsGrid extends StatelessWidget {
-  final int completedCount;
-  final int totalCount;
-  final EraTheme theme;
-  final Color textColor;
-
-  const _AchievementsGrid({
-    required this.completedCount,
-    required this.totalCount,
-    required this.theme,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final achievements = [
-      {
-        'title': 'First Step',
-        'desc': 'Complete your first story',
-        'unlocked': completedCount >= 1,
-        'icon': Icons.play_arrow,
-      },
-      {
-        'title': 'Explorer',
-        'desc': 'Complete 5 stories',
-        'unlocked': completedCount >= 5,
-        'icon': Icons.explore,
-      },
-      {
-        'title': 'Time Traveler',
-        'desc': 'Complete 10 stories',
-        'unlocked': completedCount >= 10,
-        'icon': Icons.access_time,
-      },
-      {
-        'title': 'Sage',
-        'desc': 'Complete 20 stories',
-        'unlocked': completedCount >= 20,
-        'icon': Icons.psychology,
-      },
-      {
-        'title': 'Enlightened',
-        'desc': 'Complete all stories',
-        'unlocked': completedCount >= totalCount,
-        'icon': Icons.auto_awesome,
-      },
-    ];
-
-    return Column(
-      children: achievements.map((a) {
-        final unlocked = a['unlocked'] as bool;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: theme.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: unlocked
-                  ? theme.primaryColor.withValues(alpha: 0.5)
-                  : textColor.withValues(alpha: 0.1),
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: unlocked
-                      ? theme.primaryColor.withValues(alpha: 0.2)
-                      : textColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  a['icon'] as IconData,
-                  color: unlocked
-                      ? theme.primaryColor
-                      : textColor.withValues(alpha: 0.3),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      a['title'] as String,
-                      style: TextStyle(
-                        color: unlocked
-                            ? textColor
-                            : textColor.withValues(alpha: 0.5),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      a['desc'] as String,
-                      style: TextStyle(
-                        color: textColor.withValues(alpha: 0.5),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (unlocked)
-                Icon(
-                  Icons.check_circle,
-                  color: Colors.green.shade400,
-                  size: 24,
-                ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
+} // End of State logic (replacing the previous _animateToNode... end)

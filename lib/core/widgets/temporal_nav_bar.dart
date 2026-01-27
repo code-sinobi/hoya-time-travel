@@ -31,15 +31,15 @@ class _TemporalNavBarState extends State<TemporalNavBar>
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: GalacticColors.deepNebula.withOpacity(0.8),
+        color: GalacticColors.deepNebula.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(40),
         border: Border.all(
-          color: GalacticColors.neonCyan.withOpacity(0.5),
+          color: GalacticColors.etherealCyan.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: GalacticColors.neonCyan.withOpacity(0.2),
+            color: GalacticColors.etherealCyan.withValues(alpha: 0.2),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -47,17 +47,18 @@ class _TemporalNavBarState extends State<TemporalNavBar>
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildNavItem(0, Icons.home, 'Portal'),
-          const SizedBox(width: 32),
-          _buildNavItem(1, Icons.library_books, 'Library'),
-          const SizedBox(width: 32),
+          Flexible(child: _buildNavItem(0, Icons.home, 'Portal')),
+          const SizedBox(width: 16),
+          Flexible(child: _buildNavItem(1, Icons.library_books, 'Library')),
+          const SizedBox(width: 16),
           // Central Portal Button
           _buildPortalButton(),
-          const SizedBox(width: 32),
-          _buildNavItem(2, Icons.explore, 'Rifts'),
-          const SizedBox(width: 32),
-          _buildNavItem(3, Icons.person, 'Profile'),
+          const SizedBox(width: 16),
+          Flexible(child: _buildNavItem(2, Icons.explore, 'Rifts')),
+          const SizedBox(width: 16),
+          Flexible(child: _buildNavItem(3, Icons.person, 'Profile')),
         ],
       ),
     );
@@ -74,8 +75,8 @@ class _TemporalNavBarState extends State<TemporalNavBar>
           Icon(
             icon,
             color: isSelected
-                ? GalacticColors.neonCyan
-                : Colors.white.withOpacity(0.7),
+                ? GalacticColors.etherealCyan
+                : Colors.white.withValues(alpha: 0.7),
             size: 22,
           ),
           const SizedBox(height: 4),
@@ -84,8 +85,8 @@ class _TemporalNavBarState extends State<TemporalNavBar>
             style: GoogleFonts.orbitron(
               fontSize: 10,
               color: isSelected
-                  ? GalacticColors.neonCyan
-                  : Colors.white.withOpacity(0.7),
+                  ? GalacticColors.etherealCyan
+                  : Colors.white.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -102,7 +103,7 @@ class _TemporalNavBarState extends State<TemporalNavBar>
         decoration: BoxDecoration(
           gradient: RadialGradient(
             colors: [
-              GalacticColors.neonCyan.withOpacity(0.8),
+              GalacticColors.etherealCyan.withValues(alpha: 0.8),
               GalacticColors.wormholeBlue,
             ],
           ),
@@ -110,7 +111,7 @@ class _TemporalNavBarState extends State<TemporalNavBar>
           border: Border.all(color: GalacticColors.temporalGold, width: 2),
           boxShadow: [
             BoxShadow(
-              color: GalacticColors.neonCyan.withOpacity(0.5),
+              color: GalacticColors.etherealCyan.withValues(alpha: 0.5),
               blurRadius: 20,
               spreadRadius: 5,
             ),

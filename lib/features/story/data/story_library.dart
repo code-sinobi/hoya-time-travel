@@ -22,6 +22,9 @@ class StoryMetadata {
     required this.primaryColor,
     required this.aiPrompt,
   });
+
+  // Alias for UI consistency - allows easy future era-based color logic overrides
+  Color get eraColor => primaryColor;
 }
 
 const List<StoryMetadata> storyLibrary = [

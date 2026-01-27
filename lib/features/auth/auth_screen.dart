@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/router/routes.dart';
 import 'services/auth_service.dart';
 import '../../core/widgets/galactic_background.dart';
 
@@ -26,7 +29,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
-  bool _isLogin = true;
+  bool _isEntryMode = true;
   bool _isLoading = false;
 
   @override
@@ -46,8 +49,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final auth = ref.read(authServiceProvider);
 
     try {
-      if (_isLogin) {
+      if (_isEntryMode) {
         await auth.signIn(_emailController.text, _passwordController.text);
+        if (mounted) context.go(AppRoutes.portal); // Manual navigation
       } else {
         await auth.signUp(
           _emailController.text,
@@ -62,7 +66,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             ),
           );
           setState(() {
-            _isLogin = true;
+            _isEntryMode = true;
             _passwordController.clear();
           });
         }
@@ -73,7 +77,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             .read(errorHandlerProvider.notifier)
             .handle(
               AuthException(
-                '${_isLogin ? 'Login' : 'Sign up'} failed: ${e.message}',
+                '${_isEntryMode ? 'Enter' : 'Sign up'} failed: ${e.message}',
                 e,
               ),
               context: context,
@@ -115,40 +119,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Logo with Sci-Fi Glow
-                    Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                GalacticColors.wormholeBlue.withOpacity(0.3),
-                                GalacticColors.deepNebula.withOpacity(0.1),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: GalacticColors.neonCyan.withOpacity(0.2),
-                                blurRadius: 30,
-                                spreadRadius: 5,
-                              ),
-                            ],
-                            border: Border.all(
-                              color: GalacticColors.neonCyan.withOpacity(0.5),
-                              width: 1,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons
-                                .hourglass_empty, // Or futuristic icon if available
-                            size: 60,
-                            color: GalacticColors.neonCyan,
-                          ),
-                        )
-                        .animate()
-                        .scale(duration: 800.ms, curve: Curves.elasticOut)
-                        .then()
-                        .shimmer(duration: 2000.ms),
+                    // Raw Lottie Animation
+                    Animate(
+                      effects: [
+                        ScaleEffect(duration: 800.ms, curve: Curves.elasticOut),
+                      ],
+                      child: Lottie.asset(
+                        'assets/lottie/warp-speed-ring.json',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
 
                     const SizedBox(height: 24),
 
@@ -158,7 +140,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           'TEMPORAL WISDOM ARCHIVE',
                           textStyle: GoogleFonts.orbitron(
                             fontSize: 14,
-                            color: GalacticColors.neonCyan,
+                            color: GalacticColors.etherealCyan,
                             letterSpacing: 2,
                           ),
                           speed: const Duration(milliseconds: 50),
@@ -169,109 +151,112 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
                     const SizedBox(height: 48),
 
-                    // Glassmorphic Form Card
-                    GlassMorphicCard(
-                      blur: 15,
-                      opacity: 0.6,
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            Text(
-                              _isLogin
-                                  ? 'TEMPORAL ACCESS'
-                                  : 'INITIATE SEQUENCE',
-                              style: GoogleFonts.orbitron(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 1,
+                    // Glassmorphic Form Card with constrained width
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: GlassMorphicCard(
+                        blur: 15,
+                        opacity: 0.6,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              Text(
+                                _isEntryMode
+                                    ? 'TEMPORAL ACCESS'
+                                    : 'INITIATE SEQUENCE',
+                                style: GoogleFonts.orbitron(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 1,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 32),
+                              const SizedBox(height: 40),
 
-                            // Sci-Fi Inputs
-                            if (!_isLogin) ...[
+                              // Sci-Fi Inputs
+                              if (!_isEntryMode) ...[
+                                SciFiTextField(
+                                  controller: _usernameController,
+                                  label: 'CODENAME',
+                                  prefixIcon: Icons.badge_outlined,
+                                  onChanged: (_) {},
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
                               SciFiTextField(
-                                controller: _usernameController,
-                                label: 'CODENAME',
-                                prefixIcon: Icons.badge_outlined,
+                                controller: _emailController,
+                                label: 'TEMPORAL ID (EMAIL)',
+                                prefixIcon: Icons.alternate_email,
                                 onChanged: (_) {},
                               ),
-                              const SizedBox(height: 20),
-                            ],
+                              const SizedBox(height: 16),
 
-                            SciFiTextField(
-                              controller: _emailController,
-                              label: 'TEMPORAL ID (EMAIL)',
-                              prefixIcon: Icons.alternate_email,
-                              onChanged: (_) {},
-                            ),
-                            const SizedBox(height: 20),
-
-                            SciFiTextField(
-                              controller: _passwordController,
-                              label: 'CHRONO-KEY',
-                              prefixIcon: Icons.lock_outline,
-                              isPassword: true,
-                              onChanged: (_) {},
-                            ),
-
-                            const SizedBox(height: 32),
-
-                            // Action Button
-                            if (_isLoading)
-                              CircularProgressIndicator(
-                                color: GalacticColors.neonCyan,
-                              )
-                            else
-                              GestureDetector(
-                                onTap: _submit,
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        GalacticColors.wormholeBlue,
-                                        GalacticColors.quantumPurple,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: GalacticColors.neonCyan
-                                            .withOpacity(0.4),
-                                        blurRadius: 15,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: GalacticColors.neonCyan
-                                          .withOpacity(0.5),
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _isLogin
-                                          ? 'ACTIVATE PORTAL'
-                                          : 'ESTABLISH LINK',
-                                      style: GoogleFonts.orbitron(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: 2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ).animate().shimmer(
-                                delay: 2000.ms,
-                                duration: 1500.ms,
+                              SciFiTextField(
+                                controller: _passwordController,
+                                label: 'CHRONO-KEY',
+                                prefixIcon: Icons.lock_outline,
+                                isPassword: true,
+                                onChanged: (_) {},
                               ),
-                          ],
+
+                              const SizedBox(height: 32),
+
+                              // Action Button
+                              if (_isLoading)
+                                const CircularProgressIndicator(
+                                  color: GalacticColors.etherealCyan,
+                                )
+                              else
+                                GestureDetector(
+                                  onTap: _submit,
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          GalacticColors.wormholeBlue,
+                                          GalacticColors.quantumPurple,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: GalacticColors.etherealCyan
+                                              .withValues(alpha: 0.4),
+                                          blurRadius: 15,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                      border: Border.all(
+                                        color: GalacticColors.etherealCyan
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        _isEntryMode
+                                            ? 'ACTIVATE PORTAL'
+                                            : 'ESTABLISH LINK',
+                                        style: GoogleFonts.orbitron(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          letterSpacing: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ).animate().shimmer(
+                                  delay: 2000.ms,
+                                  duration: 1500.ms,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -283,11 +268,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       onPressed: _isLoading
                           ? null
                           : () => setState(() {
-                              _isLogin = !_isLogin;
+                              _isEntryMode = !_isEntryMode;
                               _formKey.currentState?.reset();
                             }),
                       child: Text(
-                        _isLogin
+                        _isEntryMode
                             ? 'NEW NAVIGATOR? ESTABLISH LINK'
                             : 'EXISTING NAVIGATOR? ACTIVATE PORTAL',
                         style: GoogleFonts.orbitron(

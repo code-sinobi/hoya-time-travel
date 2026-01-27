@@ -29,6 +29,16 @@ class StoryRepository {
 
   StoryRepository(this._client);
 
+  Future<List<Story>> getStories() async {
+    try {
+      final response = await _client.from('stories').select();
+      return (response as List).map((e) => Story.fromJson(e)).toList();
+    } catch (e) {
+      AppLogger.error('Error fetching stories', error: e);
+      return [];
+    }
+  }
+
   Future<UserProgress?> getProgress(String storyId) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) return null;

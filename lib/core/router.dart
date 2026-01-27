@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +12,8 @@ import '../features/auth/services/auth_service.dart';
 import '../features/library/library_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/rifts/rifts_screen.dart';
+import '../features/onboarding/providers/onboarding_provider.dart';
 import 'router/routes.dart';
-import 'providers/shared_preferences_provider.dart';
 
 import 'widgets/scaffold_with_navbar.dart';
 
@@ -20,18 +21,21 @@ part 'router.g.dart';
 
 @riverpod
 GoRouter router(Ref ref) {
-  final authState = ref.watch(authStateChangesProvider);
-  final prefs = ref.watch(sharedPreferencesProvider);
+  final notifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: notifier,
     redirect: (context, state) {
-      final hasCompletedOnboarding =
-          prefs.getBool('onboarding_complete') ?? false;
-      final isLoggedIn = authState.value?.session != null;
+      final hasCompletedOnboarding = ref.read(onboardingNotifierProvider);
+      final isLoggedIn = ref.read(authServiceProvider).currentUser != null;
       final currentPath = state.uri.path;
 
-      // Allow splash screen to show
+      debugPrint(
+        'ROUTER: path=$currentPath, onboarding=$hasCompletedOnboarding, loggedIn=$isLoggedIn',
+      );
+
+      // Allow splash screen to show initially
       if (currentPath == AppRoutes.splash) return null;
 
       // Redirect to onboarding if not completed
@@ -39,14 +43,18 @@ GoRouter router(Ref ref) {
         return AppRoutes.onboarding;
       }
 
-      // Auth guards (after onboarding)
+      // If finished onboarding but not logged in, go to Auth
       if (hasCompletedOnboarding &&
           !isLoggedIn &&
           currentPath != AppRoutes.auth) {
         return AppRoutes.auth;
       }
 
-      if (isLoggedIn && currentPath == AppRoutes.auth) {
+      // If logged in and trying to access auth/onboarding/splash, go to Portal
+      if (isLoggedIn &&
+          (currentPath == AppRoutes.auth ||
+              currentPath == AppRoutes.onboarding ||
+              currentPath == AppRoutes.splash)) {
         return AppRoutes.portal;
       }
 
@@ -105,4 +113,25 @@ GoRouter router(Ref ref) {
       ),
     ],
   );
+}
+
+/// A notifier that combines auth and onboarding state to trigger router refreshes
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    // Watch auth changes
+    _ref.listen(authStateChangesProvider, (_, _) {
+      notifyListeners();
+    });
+    // Watch onboarding changes
+    _ref.listen(onboardingNotifierProvider, (_, _) {
+      notifyListeners();
+    });
+  }
+}
+
+@riverpod
+RouterNotifier routerNotifier(Ref ref) {
+  return RouterNotifier(ref);
 }

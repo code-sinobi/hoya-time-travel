@@ -11,7 +11,10 @@ Story _$StoryFromJson(Map<String, dynamic> json) => Story(
   title: json['title'] as String,
   eraId: json['eraId'] as String,
   description: json['description'] as String,
-  heroImageUrl: json['heroImageUrl'] as String,
+  heroImageUrl: json['hero_image_url'] as String?,
+  xCoordinate: (json['x_coordinate'] as num?)?.toDouble() ?? 0.5,
+  yCoordinate: (json['y_coordinate'] as num?)?.toDouble() ?? 0.5,
+  isRift: json['is_rift'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$StoryToJson(Story instance) => <String, dynamic>{
@@ -19,7 +22,10 @@ Map<String, dynamic> _$StoryToJson(Story instance) => <String, dynamic>{
   'title': instance.title,
   'eraId': instance.eraId,
   'description': instance.description,
-  'heroImageUrl': instance.heroImageUrl,
+  'hero_image_url': instance.heroImageUrl,
+  'x_coordinate': instance.xCoordinate,
+  'y_coordinate': instance.yCoordinate,
+  'is_rift': instance.isRift,
 };
 
 StoryNode _$StoryNodeFromJson(Map<String, dynamic> json) => StoryNode(

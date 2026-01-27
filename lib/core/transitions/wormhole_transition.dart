@@ -52,11 +52,11 @@ class WormholeTransition extends PageRouteBuilder {
                           shape: BoxShape.circle,
                           gradient: RadialGradient(
                             colors: [
-                              GalacticColors.neonCyan.withOpacity(
-                                1.0 - animation.value,
+                              GalacticColors.etherealCyan.withValues(
+                                alpha: 1.0 - animation.value,
                               ),
-                              GalacticColors.wormholeBlue.withOpacity(
-                                0.5 - animation.value * 0.5,
+                              GalacticColors.wormholeBlue.withValues(
+                                alpha: 0.5 - animation.value * 0.5,
                               ),
                               Colors.transparent,
                             ],

@@ -46,8 +46,8 @@ class _GalacticBackgroundState extends State<GalacticBackground>
               center: Alignment.center,
               radius: _pulse.value,
               colors: [
-                GalacticColors.wormholeBlue.withOpacity(0.1),
-                GalacticColors.deepNebula.withOpacity(0.3),
+                GalacticColors.wormholeBlue.withValues(alpha: 0.1),
+                GalacticColors.deepNebula.withValues(alpha: 0.3),
                 GalacticColors.spaceBlack,
               ],
               stops: const [0.1, 0.5, 1.0],

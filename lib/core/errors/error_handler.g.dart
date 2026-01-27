@@ -16,7 +16,7 @@ String _$errorHandlerHash() => r'574345871362832e27b15d51244c2c7210f6ca17';
 ///   await someOperation();
 /// } catch (e) {
 ///   ref.read(errorHandlerProvider).handle(
-///     AuthException('Login failed', e),
+///     AuthException('Entry failed', e),
 ///     context: context,
 ///   );
 /// }

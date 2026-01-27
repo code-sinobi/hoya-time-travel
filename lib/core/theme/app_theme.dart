@@ -3,8 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'era_theme.dart';
-import 'galactic_colors.dart';
-import 'galactic_theme.dart';
 
 part 'app_theme.g.dart';
 
@@ -18,79 +16,77 @@ class CurrentEra extends _$CurrentEra {
 
 @riverpod
 ThemeData appTheme(Ref ref) {
-  // We can still watch currentEra if we want era-specific tweaks,
-  // but the base theme is now Galactic.
   final currentEra = ref.watch(currentEraProvider);
-
-  // Initialize GalacticTheme extension
-  const galacticTheme = GalacticTheme(
-    temporalEnergy: GalacticColors.temporalGold,
-    portalGlow: GalacticColors.neonCyan,
-    starField: GalacticColors.deepNebula,
-    timelineFont: TextStyle(
-      fontFamily: 'Orbitron',
-    ), // Will be updated with GoogleFonts in main textTheme
-    hudFont: TextStyle(fontFamily: 'Orbitron'),
-  );
 
   return ThemeData(
     useMaterial3: true,
-    scaffoldBackgroundColor: GalacticColors.spaceBlack,
-    primaryColor: GalacticColors.wormholeBlue,
+    scaffoldBackgroundColor: MythicColors.voidBackground,
+    primaryColor: MythicColors.bronze,
 
     // Define the base color scheme
     colorScheme: ColorScheme.fromSeed(
-      seedColor: GalacticColors.wormholeBlue,
+      seedColor: MythicColors.bronze,
       brightness: Brightness.dark,
-      surface: GalacticColors.deepNebula,
-      onSurface: GalacticColors.starWhite,
-      primary: GalacticColors.neonCyan,
-      secondary: GalacticColors.quantumPurple,
-      tertiary: GalacticColors.temporalGold,
+      surface: MythicColors.deepIndigo,
+      onSurface: MythicColors.parchment,
+      primary: MythicColors.bronze,
+      secondary: MythicColors.parchment,
+      tertiary: MythicColors.ochreRed,
+      error: MythicColors.ochreRed,
     ),
 
     // AppBar Icon Theme
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      iconTheme: IconThemeData(color: GalacticColors.neonCyan),
+      iconTheme: IconThemeData(color: MythicColors.bronze),
     ),
 
-    // Text Theme (Futuristic)
-    textTheme: GoogleFonts.exo2TextTheme(ThemeData.dark().textTheme).copyWith(
-      displayLarge: GoogleFonts.orbitron(
-        fontSize: 32,
-        fontWeight: FontWeight.w900,
-        color: GalacticColors.neonCyan,
-      ),
-      displayMedium: GoogleFonts.orbitron(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-      ),
-      bodyLarge: GoogleFonts.exo2(
-        fontSize: 16,
-        color: GalacticColors.starWhite,
-      ),
-      bodyMedium: GoogleFonts.exo2(
-        fontSize: 14,
-        color: GalacticColors.starWhite.withOpacity(0.9),
-      ),
-      labelLarge: GoogleFonts.audiowide(
-        fontSize: 14,
-        fontWeight: FontWeight.bold,
-        color: GalacticColors.temporalGold,
-      ),
-    ),
+    // Text Theme (Mythic)
+    textTheme:
+        GoogleFonts.cormorantGaramondTextTheme(
+          ThemeData.dark().textTheme,
+        ).copyWith(
+          displayLarge: GoogleFonts.cinzelDecorative(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: MythicColors.parchment,
+            shadows: [
+              const BoxShadow(
+                color: Colors.black,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          displayMedium: GoogleFonts.cinzelDecorative(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: MythicColors.bronze,
+          ),
+          bodyLarge: GoogleFonts.cormorantGaramond(
+            fontSize: 18,
+            color: MythicColors.parchment,
+            height: 1.4,
+          ),
+          bodyMedium: GoogleFonts.cormorantGaramond(
+            fontSize: 16,
+            color: MythicColors.parchment.withValues(alpha: 0.9),
+          ),
+          labelLarge: GoogleFonts.cinzel(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+            color: MythicColors.bronze,
+          ),
+        ),
 
     // Register Extensions
     extensions: [
-      galacticTheme,
-      // Keep EraTheme logic if needed, or replace/simplify
       if (currentEra == EraType.ancient)
         AncientEraTheme()
       else
-        FutureEraTheme(),
+        FutureEraTheme(), // Now adapted to mythic style
     ],
   );
 }

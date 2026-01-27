@@ -24,85 +24,125 @@ class TemporalHUD extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             // Level & XP
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: GalacticColors.deepNebula.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: GalacticColors.temporalGold,
-                  width: 2,
+            Flexible(
+              flex: 2,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                boxShadow: GalacticColors.glowGold,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.auto_awesome,
+                decoration: BoxDecoration(
+                  color: GalacticColors.deepNebula.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
                     color: GalacticColors.temporalGold,
-                    size: 20,
+                    width: 2,
                   ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'LEVEL $level',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 12,
-                          color: GalacticColors.temporalGold,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  boxShadow: GalacticColors.glowGold,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: GalacticColors.temporalGold,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'LEVEL $level',
+                              style: GoogleFonts.orbitron(
+                                fontSize: 12,
+                                color: GalacticColors.temporalGold,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '$xp XP',
+                            style: GoogleFonts.exo2(
+                              fontSize: 10,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        '$xp XP',
-                        style: GoogleFonts.exo2(
-                          fontSize: 10,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
 
+            const SizedBox(width: 12),
+
             // Temporal Energy
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: GalacticColors.deepNebula.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: GalacticColors.neonCyan, width: 2),
-                boxShadow: GalacticColors.glowCyan,
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.bolt, color: GalacticColors.neonCyan, size: 20),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'TEMPORAL ENERGY',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 10,
-                          color: GalacticColors.neonCyan,
-                        ),
-                      ),
-                      Text(
-                        '$temporalEnergy TE',
-                        style: GoogleFonts.audiowide(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+            Flexible(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: GalacticColors.deepNebula.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: GalacticColors.etherealCyan,
+                    width: 2,
                   ),
-                ],
+                  boxShadow: GalacticColors.glowCyan,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.bolt,
+                      color: GalacticColors.etherealCyan,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'TEMPORAL ENERGY',
+                              style: GoogleFonts.orbitron(
+                                fontSize: 10,
+                                color: GalacticColors.etherealCyan,
+                              ),
+                            ),
+                          ),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '$temporalEnergy TE',
+                              style: GoogleFonts.audiowide(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            const SizedBox(width: 12),
 
             // Avatar/Profile
             GestureDetector(
@@ -113,17 +153,20 @@ class TemporalHUD extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [
                       GalacticColors.quantumPurple,
                       GalacticColors.wormholeBlue,
                     ],
                   ),
                   shape: BoxShape.circle,
-                  border: Border.all(color: GalacticColors.neonCyan, width: 2),
+                  border: Border.all(
+                    color: GalacticColors.etherealCyan,
+                    width: 2,
+                  ),
                   boxShadow: GalacticColors.glowCyan,
                 ),
-                child: Icon(Icons.person, color: Colors.white),
+                child: const Icon(Icons.person, color: Colors.white),
               ),
             ),
           ],

@@ -7,7 +7,7 @@ class GalacticColors {
   static const Color wormholeBlue = Color(0xFF2A6BDB);
   static const Color quantumPurple = Color(0xFF9D4EDD);
   static const Color temporalGold = Color(0xFFFFD700);
-  static const Color neonCyan = Color(0xFF00D4FF);
+  static const Color etherealCyan = Color(0xFF00D4FF);
   static const Color singularityBlack = Color(0xFF000814);
   static const Color starWhite = Color(0xFFF0F8FF);
 
@@ -38,6 +38,6 @@ class GalacticColors {
       const Color(0xFF4B0082),
       const Color(0xFF9400D3),
     ], // Royal purples
-    'futuristic': [neonCyan, wormholeBlue], // Cyber blues
+    'futuristic': [etherealCyan, wormholeBlue], // Mystical blues
   };
 }
