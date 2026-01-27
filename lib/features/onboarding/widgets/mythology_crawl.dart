@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:math' show pi, Random;
+import 'dart:math' show pi, Random, sin;
 
 /// Data model for a section of crawl text
 class CrawlSection {
@@ -119,8 +119,8 @@ class _MythologyCrawlState extends State<MythologyCrawl>
 
   void _updateScrollAnimation() {
     final adjustedDuration = Duration(
-      milliseconds: (widget.crawlDuration.inMilliseconds / _speedMultiplier)
-          .round(),
+      milliseconds:
+          (widget.crawlDuration.inMilliseconds / _speedMultiplier).round(),
     );
 
     _scrollController.duration = adjustedDuration;
@@ -410,9 +410,9 @@ class ParallaxLayer {
     required this.color,
     required Random random,
   }) : particles = List.generate(
-         particleCount,
-         (_) => Particle.random(random, sizeRange, opacityRange),
-       );
+          particleCount,
+          (_) => Particle.random(random, sizeRange, opacityRange),
+        );
 }
 
 class Particle {
@@ -438,11 +438,9 @@ class Particle {
     return Particle(
       x: random.nextDouble(),
       y: random.nextDouble(),
-      size:
-          sizeRange.start +
+      size: sizeRange.start +
           random.nextDouble() * (sizeRange.end - sizeRange.start),
-      opacity:
-          opacityRange.start +
+      opacity: opacityRange.start +
           random.nextDouble() * (opacityRange.end - opacityRange.start),
       twinkleSpeed: 0.5 + random.nextDouble() * 2.0,
     );
@@ -475,9 +473,9 @@ class ParallaxPainter extends CustomPainter {
       final twinkle = isPaused
           ? 1.0
           : 0.7 +
-                0.3 *
-                    ((progress * particle.twinkleSpeed * 10) % (2 * pi))
-                        .sinValue();
+              0.3 *
+                  ((progress * particle.twinkleSpeed * 10) % (2 * pi))
+                      .sinValue();
       final currentOpacity = particle.opacity * twinkle;
 
       paint.color = layer.color.withValues(alpha: currentOpacity);
@@ -505,9 +503,5 @@ class ParallaxPainter extends CustomPainter {
 }
 
 extension on double {
-  double sinValue() {
-    // Simple approximation for sin using Taylor series
-    final x = this % (2 * pi);
-    return x - (x * x * x) / 6 + (x * x * x * x * x) / 120;
-  }
+  double sinValue() => sin(this);
 }

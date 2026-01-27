@@ -10,7 +10,7 @@ String _$openRouterServiceHash() => r'7824096e03b63695be3c98fcdc435aac8d943e65';
 
 /// OpenRouter API Service
 /// Uses the OpenRouter unified API for AI model access
-/// Default model: GLM 4.5 Air (free)
+/// Default model: Gemma 3n E4B IT (free)
 ///
 /// Copied from [openRouterService].
 @ProviderFor(openRouterService)

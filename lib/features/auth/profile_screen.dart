@@ -22,7 +22,6 @@ class ProfileScreen extends ConsumerWidget {
       body: Stack(
         children: [
           const GalacticBackground(showStars: true),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -64,37 +63,37 @@ class ProfileScreen extends ConsumerWidget {
                       children: [
                         // Avatar Medallion
                         Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: MythicColors.deepIndigo,
-                                border: Border.all(
-                                  color: MythicColors.bronze,
-                                  width: 3,
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: MythicColors.deepIndigo,
+                            border: Border.all(
+                              color: MythicColors.bronze,
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: MythicColors.bronze.withValues(
+                                  alpha: 0.3,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: MythicColors.bronze.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                    blurRadius: 20,
-                                  ),
-                                ],
+                                blurRadius: 20,
                               ),
-                              child: Center(
-                                child: Text(
-                                  profileAsync.value?.username
-                                          ?.substring(0, 1)
-                                          .toUpperCase() ??
-                                      'T',
-                                  style: GoogleFonts.cinzelDecorative(
-                                    fontSize: 48,
-                                    color: MythicColors.parchment,
-                                  ),
-                                ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              profileAsync.value?.username
+                                      ?.substring(0, 1)
+                                      .toUpperCase() ??
+                                  'T',
+                              style: GoogleFonts.cinzelDecorative(
+                                fontSize: 48,
+                                color: MythicColors.parchment,
                               ),
-                            )
+                            ),
+                          ),
+                        )
                             .animate(onPlay: (c) => c.repeat(reverse: true))
                             .shimmer(
                               duration: 4.seconds,
@@ -143,7 +142,7 @@ class ProfileScreen extends ConsumerWidget {
                           loading: () => const CircularProgressIndicator(
                             color: MythicColors.bronze,
                           ),
-                          error: (_, _) => const Text(
+                          error: (_, __) => const Text(
                             'ID ERROR',
                             style: TextStyle(color: Colors.red),
                           ),

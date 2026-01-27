@@ -8,7 +8,7 @@ part 'openrouter_service.g.dart';
 
 /// OpenRouter API Service
 /// Uses the OpenRouter unified API for AI model access
-/// Default model: GLM 4.5 Air (free)
+/// Default model: Gemma 3n E4B IT (free)
 @Riverpod(keepAlive: true)
 OpenRouterService openRouterService(Ref ref) {
   const apiKey = String.fromEnvironment('OPENROUTER_API_KEY', defaultValue: '');

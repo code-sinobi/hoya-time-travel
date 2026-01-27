@@ -34,6 +34,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   // Scanner State
   bool _isScannerActive = false;
   Offset _scannerPosition = Offset.zero;
+  final Set<String> _scannedNodeIds = {};
 
   @override
   void initState() {
@@ -89,35 +90,34 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                             Positioned(
                               left: _scannerPosition.dx - 100,
                               top: _scannerPosition.dy - 100,
-                              child:
-                                  Container(
-                                        width: 200,
-                                        height: 200,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.cyanAccent,
-                                            width: 2,
-                                          ),
-                                          gradient: RadialGradient(
-                                            colors: [
-                                              Colors.cyanAccent.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              Colors.transparent,
-                                            ],
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.cyanAccent
-                                                  .withValues(alpha: 0.2),
-                                              blurRadius: 20,
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                      .animate(onPlay: (c) => c.repeat())
-                                      .rotate(duration: 5.seconds),
+                              child: Container(
+                                width: 200,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.cyanAccent,
+                                    width: 2,
+                                  ),
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.cyanAccent.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      Colors.transparent,
+                                    ],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.cyanAccent
+                                          .withValues(alpha: 0.2),
+                                      blurRadius: 20,
+                                    ),
+                                  ],
+                                ),
+                              )
+                                  .animate(onPlay: (c) => c.repeat())
+                                  .rotate(duration: 5.seconds),
                             ),
                           // Nodes
                           ..._buildNodes(stories),
@@ -141,8 +141,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   setState(() {
                     debugPrint('Scanner Pan: ${d.delta}');
                     // Map screen movement to map movement based on active scale
-                    final scale = _transformController.value
-                        .getMaxScaleOnAxis();
+                    final scale =
+                        _transformController.value.getMaxScaleOnAxis();
                     _scannerPosition += d.delta / scale;
                   });
                 },
@@ -169,9 +169,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       backgroundColor: _isScannerActive
                           ? Colors.cyanAccent
                           : const Color(0xFF2A2A35),
-                      foregroundColor: _isScannerActive
-                          ? Colors.black
-                          : Colors.white,
+                      foregroundColor:
+                          _isScannerActive ? Colors.black : Colors.white,
                       onPressed: () {
                         setState(() {
                           _isScannerActive = !_isScannerActive;
@@ -246,6 +245,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         if (dist < 100) {
           // Lens radius
           scannerOpacity = (1 - (dist / 100)).clamp(0.0, 1.0);
+
+          // Auto-discover nodes that are clearly within the scanner lens
+          if (scannerOpacity > 0.8 && story.isRift) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_scannedNodeIds.contains(story.id)) {
+                setState(() => _scannedNodeIds.add(story.id));
+              }
+            });
+          }
         }
       }
 
@@ -262,8 +270,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               'isRift': story.isRift,
               'era': story.eraId,
             },
-            isLocked:
-                isHidden &&
+            isLocked: isHidden &&
                 scannerOpacity < 0.8, // Lock interaction if not fully scanned
             onTap: () {
               if (finalOpacity > 0.5) _animateToNode(story);
@@ -275,7 +282,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   bool _isNodeScanned(Story s) {
-    return false; // Everything requires scanning/visibility logic for Rifts
+    return _scannedNodeIds.contains(s.id);
   }
 
   Widget _buildHeader() {
@@ -304,11 +311,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 _isScannerActive ? 'TEMPORAL SCANNING...' : 'ARCHIVE VII',
                 style: GoogleFonts.orbitron(
                   fontSize: 12,
-                  color:
-                      (_isScannerActive
-                              ? Colors.cyanAccent
-                              : MythicColors.parchment)
-                          .withValues(alpha: 0.7),
+                  color: (_isScannerActive
+                          ? Colors.cyanAccent
+                          : MythicColors.parchment)
+                      .withValues(alpha: 0.7),
                   letterSpacing: 2,
                 ),
               ).animate(target: _isScannerActive ? 1 : 0).shimmer(),
@@ -330,9 +336,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             child: Center(
               child: Icon(
                 _isScannerActive ? Icons.radar : Icons.explore,
-                color: _isScannerActive
-                    ? Colors.cyanAccent
-                    : MythicColors.bronze,
+                color:
+                    _isScannerActive ? Colors.cyanAccent : MythicColors.bronze,
                 size: 28,
               ).animate(onPlay: (c) => c.repeat()).rotate(duration: 10.seconds),
             ),
@@ -344,11 +349,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   void _animateToNode(Story story) {
     final targetScale = 2.0;
-    final x =
-        -(story.xCoordinate * 1000 * targetScale) +
+    final x = -(story.xCoordinate * 1000 * targetScale) +
         (MediaQuery.of(context).size.width / 2);
-    final y =
-        -(story.yCoordinate * 1000 * targetScale) +
+    final y = -(story.yCoordinate * 1000 * targetScale) +
         (MediaQuery.of(context).size.height / 2);
 
     final matrix = Matrix4.identity()
@@ -359,12 +362,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     final animation =
         Matrix4Tween(begin: _transformController.value, end: matrix).animate(
-          CurvedAnimation(
-            parent: AnimationController(vsync: this, duration: 800.ms)
-              ..forward(),
-            curve: Curves.easeInOut,
-          ),
-        );
+      CurvedAnimation(
+        parent: AnimationController(vsync: this, duration: 800.ms)..forward(),
+        curve: Curves.easeInOut,
+      ),
+    );
 
     animation.addListener(() {
       _transformController.value = animation.value;

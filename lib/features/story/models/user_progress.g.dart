@@ -7,15 +7,15 @@ part of 'user_progress.dart';
 // **************************************************************************
 
 UserProgress _$UserProgressFromJson(Map<String, dynamic> json) => UserProgress(
-  id: json['id'] as String,
-  userId: json['user_id'] as String,
-  storyId: json['story_id'] as String,
-  currentNodeId: json['current_node_id'] as String?,
-  isCompleted: json['is_completed'] as bool? ?? false,
-  lastPlayedAt: json['last_played_at'] == null
-      ? null
-      : DateTime.parse(json['last_played_at'] as String),
-);
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      storyId: json['story_id'] as String,
+      currentNodeId: json['current_node_id'] as String?,
+      isCompleted: json['is_completed'] as bool? ?? false,
+      lastPlayedAt: json['last_played_at'] == null
+          ? null
+          : DateTime.parse(json['last_played_at'] as String),
+    );
 
 Map<String, dynamic> _$UserProgressToJson(UserProgress instance) =>
     <String, dynamic>{

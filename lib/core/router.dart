@@ -21,7 +21,7 @@ part 'router.g.dart';
 
 @riverpod
 GoRouter router(Ref ref) {
-  final notifier = ref.watch(routerNotifierProvider);
+  final notifier = ref.watch(routerRefreshNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
@@ -116,22 +116,22 @@ GoRouter router(Ref ref) {
 }
 
 /// A notifier that combines auth and onboarding state to trigger router refreshes
-class RouterNotifier extends ChangeNotifier {
+class RouterRefreshNotifier extends ChangeNotifier {
   final Ref _ref;
 
-  RouterNotifier(this._ref) {
+  RouterRefreshNotifier(this._ref) {
     // Watch auth changes
-    _ref.listen(authStateChangesProvider, (_, _) {
+    _ref.listen(authStateChangesProvider, (_, __) {
       notifyListeners();
     });
     // Watch onboarding changes
-    _ref.listen(onboardingNotifierProvider, (_, _) {
+    _ref.listen(onboardingNotifierProvider, (_, __) {
       notifyListeners();
     });
   }
 }
 
 @riverpod
-RouterNotifier routerNotifier(Ref ref) {
-  return RouterNotifier(ref);
+RouterRefreshNotifier routerRefreshNotifier(Ref ref) {
+  return RouterRefreshNotifier(ref);
 }

@@ -16,9 +16,9 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  void _completeOnboarding() {
+  Future<void> _completeOnboarding() async {
     // Mark onboarding as complete via provider
-    ref.read(onboardingNotifierProvider.notifier).completeOnboarding();
+    await ref.read(onboardingNotifierProvider.notifier).completeOnboarding();
 
     // Navigate to auth
     if (mounted) {

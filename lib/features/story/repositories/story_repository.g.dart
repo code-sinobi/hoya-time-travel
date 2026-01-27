@@ -29,14 +29,14 @@ String _$allUserProgressHash() => r'0c0e87661a67cdd79f40167dc294d41d10492d1d';
 @ProviderFor(allUserProgress)
 final allUserProgressProvider =
     AutoDisposeFutureProvider<List<UserProgress>>.internal(
-      allUserProgress,
-      name: r'allUserProgressProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$allUserProgressHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  allUserProgress,
+  name: r'allUserProgressProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allUserProgressHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
@@ -49,14 +49,14 @@ String _$completedStoryIdsHash() => r'591e04f3e284f770d24ee12ca122aec39ef4735e';
 @ProviderFor(completedStoryIds)
 final completedStoryIdsProvider =
     AutoDisposeFutureProvider<Set<String>>.internal(
-      completedStoryIds,
-      name: r'completedStoryIdsProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$completedStoryIdsHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  completedStoryIds,
+  name: r'completedStoryIdsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$completedStoryIdsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element

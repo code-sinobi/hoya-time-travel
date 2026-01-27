@@ -184,6 +184,13 @@ class RelicChamber extends StatelessWidget {
                     lottieAsset!,
                     height: size * 0.6,
                     fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.auto_awesome,
+                        size: size * 0.4,
+                        color: const Color(0xFFD4A574),
+                      );
+                    },
                   ),
                 ),
             ],
@@ -461,8 +468,7 @@ class _DecryptingTextState extends State<DecryptingText> {
       if (!mounted) return;
       setState(() {
         // Show partially decrypted
-        _d =
-            widget.text.substring(0, i + 1) +
+        _d = widget.text.substring(0, i + 1) +
             (i < chars.length - 1
                 ? String.fromCharCode(33 + _r.nextInt(90))
                 : '');

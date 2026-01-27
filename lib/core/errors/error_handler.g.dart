@@ -26,14 +26,13 @@ String _$errorHandlerHash() => r'574345871362832e27b15d51244c2c7210f6ca17';
 @ProviderFor(ErrorHandler)
 final errorHandlerProvider =
     AutoDisposeNotifierProvider<ErrorHandler, void>.internal(
-      ErrorHandler.new,
-      name: r'errorHandlerProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$errorHandlerHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
+  ErrorHandler.new,
+  name: r'errorHandlerProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$errorHandlerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
 typedef _$ErrorHandler = AutoDisposeNotifier<void>;
 // ignore_for_file: type=lint
