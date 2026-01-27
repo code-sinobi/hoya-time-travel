@@ -52,7 +52,14 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
 
   @override
   Widget build(BuildContext context) {
-    final currentData = widget.pages[_currentPage];
+    // Guard against empty pages or invalid index
+    if (widget.pages.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // Clamp _currentPage to valid range
+    final safeCurrentPage = _currentPage.clamp(0, widget.pages.length - 1);
+    final currentData = widget.pages[safeCurrentPage];
 
     return AnimatedBuilder(
       animation: _transitionController,
