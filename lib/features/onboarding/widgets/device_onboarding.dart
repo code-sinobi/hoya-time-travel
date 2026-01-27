@@ -42,8 +42,10 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
   void _nextPage() {
     if (_currentPage < widget.pages.length - 1) {
       _transitionController.forward().then((_) {
-        setState(() => _currentPage++);
-        _transitionController.reverse();
+        if (mounted) {
+          setState(() => _currentPage++);
+          _transitionController.reverse();
+        }
       });
     } else {
       widget.onComplete();
@@ -452,6 +454,7 @@ class DecryptingText extends StatefulWidget {
 class _DecryptingTextState extends State<DecryptingText> {
   String _d = '';
   final _r = math.Random();
+  int _runId = 0; // Track animation instances to prevent race conditions
   @override
   void initState() {
     super.initState();
@@ -461,28 +464,42 @@ class _DecryptingTextState extends State<DecryptingText> {
   @override
   void didUpdateWidget(DecryptingText old) {
     super.didUpdateWidget(old);
-    if (old.text != widget.text) _run();
+    if (old.text != widget.text) {
+      _runId++; // Increment to cancel stale animations
+      _run();
+    }
   }
 
   void _run() async {
     if (!mounted) return;
+
+    // Capture text and runId locally to prevent race conditions
+    final localText = widget.text;
+    final currentRun = _runId;
+
     setState(() => _d = '');
-    final chars = widget.text.split('');
+    final chars = localText.split('');
     // Fast typing: 10ms-20ms
     final delay = (500 / math.max(1, chars.length)).clamp(5.0, 20.0).toInt();
 
     for (int i = 0; i < chars.length; i++) {
-      if (!mounted) return;
+      // Check if this animation is still valid
+      if (!mounted || currentRun != _runId) return;
+
       setState(() {
         // Show partially decrypted
-        _d = widget.text.substring(0, i + 1) +
+        _d = localText.substring(0, i + 1) +
             (i < chars.length - 1
                 ? String.fromCharCode(33 + _r.nextInt(90))
                 : '');
       });
       await Future.delayed(Duration(milliseconds: delay));
     }
-    if (mounted) setState(() => _d = widget.text);
+
+    // Final update only if still valid
+    if (mounted && currentRun == _runId) {
+      setState(() => _d = localText);
+    }
   }
 
   @override

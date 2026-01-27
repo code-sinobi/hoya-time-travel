@@ -41,9 +41,6 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
-dependency_overrides:
-  # Override required to resolve version conflict between flutter_test and other dependencies
-  test_api: 0.7.7
 
 flutter:
   uses-material-design: true

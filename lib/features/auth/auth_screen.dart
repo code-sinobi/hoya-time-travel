@@ -73,9 +73,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
     } on supabase.AuthApiException catch (e) {
       if (mounted) {
-        ref
-            .read(errorHandlerProvider.notifier)
-            .handle(
+        ref.read(errorHandlerProvider.notifier).handle(
               AuthException(
                 '${_isEntryMode ? 'Enter' : 'Sign up'} failed: ${e.message}',
                 e,
@@ -85,9 +83,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ref
-            .read(errorHandlerProvider.notifier)
-            .handleGeneric(
+        ref.read(errorHandlerProvider.notifier).handleGeneric(
               e,
               context: context,
               message: 'An unexpected error occurred',
@@ -125,7 +121,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         ScaleEffect(duration: 800.ms, curve: Curves.elasticOut),
                       ],
                       child: Lottie.asset(
-                        'assets/lottie/warp-speed-ring.json',
+                        'assets/lottie/temporal-ring.json',
                         width: 100,
                         height: 100,
                         fit: BoxFit.contain,
@@ -252,9 +248,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     ),
                                   ),
                                 ).animate().shimmer(
-                                  delay: 2000.ms,
-                                  duration: 1500.ms,
-                                ),
+                                      delay: 2000.ms,
+                                      duration: 1500.ms,
+                                    ),
                             ],
                           ),
                         ),
@@ -268,9 +264,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       onPressed: _isLoading
                           ? null
                           : () => setState(() {
-                              _isEntryMode = !_isEntryMode;
-                              _formKey.currentState?.reset();
-                            }),
+                                _isEntryMode = !_isEntryMode;
+                                _formKey.currentState?.reset();
+                              }),
                       child: Text(
                         _isEntryMode
                             ? 'NEW NAVIGATOR? ESTABLISH LINK'

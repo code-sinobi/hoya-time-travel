@@ -48,6 +48,9 @@ bool shouldExclude(String path) {
   // Skip scripts
   if (path.contains('scripts\\') || path.contains('scripts/')) return true;
 
+  // Skip asset directories - internal filenames don't need vocabulary checks
+  if (path.contains('assets\\') || path.contains('assets/')) return true;
+
   return false;
 }
 
