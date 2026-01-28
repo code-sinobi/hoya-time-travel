@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/era_theme.dart';
-import '../../core/theme/app_theme.dart';
-import '../story/data/story_library.dart';
-import '../story/repositories/story_repository.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-/// Library screen showing all 30 stories in a grid with filtering
+import '../../core/widgets/galactic_background.dart';
+import '../../core/theme/era_theme.dart';
+import '../../core/widgets/sci_fi_search_bar.dart';
+import '../story/data/story_library.dart';
+import 'widgets/sci_fi_story_card.dart'; // Renamed class inside, keeping file name
+
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
 
@@ -18,23 +21,12 @@ class LibraryScreen extends ConsumerStatefulWidget {
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   String? _selectedEra;
   String _searchQuery = '';
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   List<StoryMetadata> get _filteredStories {
     var stories = storyLibrary;
-
-    // Filter by era
     if (_selectedEra != null) {
       stories = stories.where((s) => s.era == _selectedEra).toList();
     }
-
-    // Filter by search
     if (_searchQuery.isNotEmpty) {
       stories = stories
           .where(
@@ -44,362 +36,222 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           )
           .toList();
     }
-
     return stories;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // We don't need 'completedIds' to filter viewing necessarily, just marking?
+    // Using filtered stories directly.
+    final stories = _filteredStories;
+
+    return Scaffold(
+      backgroundColor: MythicColors.voidBackground,
+      body: Stack(
+        children: [
+          // BG
+          const GalacticBackground(showStars: true),
+
+          // Content
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'ARCHIVES',
+                        style: GoogleFonts.orbitron(
+                          fontSize: 28,
+                          color: MythicColors.parchment,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          shadows: [
+                            BoxShadow(
+                              color: MythicColors.wormholeBlue.withValues(
+                                alpha: 0.5,
+                              ),
+                              blurRadius: 15,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: MythicColors.deepIndigo.withValues(alpha: 0.5),
+                          border: Border.all(
+                            color: MythicColors.fluxCyan.withValues(alpha: 0.3),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: MythicColors.fluxCyan.withValues(
+                                alpha: 0.2,
+                              ),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.grid_view,
+                          color: MythicColors.fluxCyan,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SciFiSearchBar(
+                    onChanged: (value) => setState(() => _searchQuery = value),
+                    hintText: 'Search timelines...',
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Era Filters (Futuristic Chips)
+                SizedBox(
+                  height: 36,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    itemCount: _availableEras.length + 1,
+                    itemBuilder: (context, index) {
+                      final isAll = index == 0;
+                      final era = isAll ? null : _availableEras[index - 1];
+                      final isSelected = _selectedEra == era;
+                      final filterColor = isSelected
+                          ? MythicColors.temporalGold
+                          : MythicColors.stoneGray;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedEra = era),
+                            borderRadius: BorderRadius.circular(18),
+                            child: AnimatedContainer(
+                              duration: 200.ms,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? filterColor.withValues(alpha: 0.2)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? filterColor
+                                      : filterColor.withValues(alpha: 0.3),
+                                ),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: filterColor.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 8,
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  isAll ? 'ALL ERAS' : era!.toUpperCase(),
+                                  style: GoogleFonts.exo2(
+                                    fontSize: 12,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? filterColor
+                                        : MythicColors.parchment.withValues(
+                                            alpha: 0.7,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Masonry Grid
+                Expanded(
+                  child: stories.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.search_off,
+                                size: 64,
+                                color: MythicColors.stoneGray,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'TIMELINE EMPTY',
+                                style: GoogleFonts.orbitron(
+                                  fontSize: 18,
+                                  color: MythicColors.stoneGray,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : MasonryGridView.count(
+                          padding: const EdgeInsets.fromLTRB(
+                            24,
+                            0,
+                            24,
+                            100,
+                          ), // Bottom pad for nav
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          itemCount: stories.length,
+                          itemBuilder: (context, index) {
+                            final story = stories[index];
+                            return AspectRatio(
+                              aspectRatio:
+                                  2 /
+                                  3, // Fixed ratio for cards to ensure uniform height in staggered grid if desired, or let content drive it.
+                              // Requirement says "Standardize card size (2:3 aspect ratio)".
+                              // So we wrap constraint here.
+                              child: SciFiStoryCard(
+                                story: story,
+                                index: index,
+                                onTap: () => context.push('/story/${story.id}'),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   List<String> get _availableEras {
     return storyLibrary.map((s) => s.era).toSet().toList()..sort();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme =
-        Theme.of(context).extension<EraTheme>() ??
-        ref.watch(appThemeProvider).extension<EraTheme>()!;
-    final completedStories = ref.watch(completedStoryIdsProvider);
-    final textColor = theme.bodyStyle.color ?? Colors.white;
-
-    return Scaffold(
-      backgroundColor: theme.backgroundColor,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Story Library',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
-                  ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${_filteredStories.length} stories available',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: textColor.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.surfaceColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: theme.primaryColor.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _searchQuery = value),
-                  style: TextStyle(color: textColor),
-                  decoration: InputDecoration(
-                    hintText: 'Search stories...',
-                    hintStyle: TextStyle(
-                      color: textColor.withValues(alpha: 0.4),
-                    ),
-                    prefixIcon: Icon(Icons.search, color: theme.primaryColor),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
-
-            const SizedBox(height: 16),
-
-            // Era Filter Chips
-            SizedBox(
-              height: 44,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  _FilterChip(
-                    label: 'All',
-                    isSelected: _selectedEra == null,
-                    onTap: () => setState(() => _selectedEra = null),
-                    theme: theme,
-                    textColor: textColor,
-                  ),
-                  ..._availableEras.map(
-                    (era) => Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: _FilterChip(
-                        label: era,
-                        isSelected: _selectedEra == era,
-                        onTap: () => setState(() => _selectedEra = era),
-                        theme: theme,
-                        textColor: textColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-
-            const SizedBox(height: 20),
-
-            // Story Grid
-            Expanded(
-              child: completedStories.when(
-                data: (completed) => GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.65,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: _filteredStories.length,
-                  itemBuilder: (context, index) {
-                    final story = _filteredStories[index];
-                    final isCompleted = completed.contains(story.id);
-                    return _StoryGridItem(
-                          story: story,
-                          isCompleted: isCompleted,
-                          theme: theme,
-                          textColor: textColor,
-                          onTap: () => context.push('/story/${story.id}'),
-                        )
-                        .animate(delay: (100 + index * 50).ms)
-                        .fadeIn()
-                        .scale(
-                          begin: const Offset(0.9, 0.9),
-                          end: const Offset(1, 1),
-                        );
-                  },
-                ),
-                loading: () => Center(
-                  child: CircularProgressIndicator(color: theme.primaryColor),
-                ),
-                error: (e, _) => Center(
-                  child: Text('Error: $e', style: TextStyle(color: textColor)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final EraTheme theme;
-  final Color textColor;
-
-  const _FilterChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.theme,
-    required this.textColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? theme.primaryColor : theme.surfaceColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? theme.primaryColor
-                : theme.primaryColor.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : textColor.withValues(alpha: 0.8),
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StoryGridItem extends StatelessWidget {
-  final StoryMetadata story;
-  final bool isCompleted;
-  final EraTheme theme;
-  final Color textColor;
-  final VoidCallback onTap;
-
-  const _StoryGridItem({
-    required this.story,
-    required this.isCompleted,
-    required this.theme,
-    required this.textColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: theme.primaryColor.withValues(alpha: 0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Story Image
-              Image.asset(
-                story.imagePath,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        theme.primaryColor.withValues(alpha: 0.6),
-                        theme.secondaryColor.withValues(alpha: 0.6),
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.auto_stories,
-                      size: 48,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Gradient Overlay
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.8),
-                      ],
-                      stops: const [0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Completed Badge
-              if (isCompleted)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
-                ),
-
-              // Era Badge
-              Positioned(
-                top: 8,
-                left: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    story.era,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Title & Moral
-              Positioned(
-                bottom: 12,
-                left: 12,
-                right: 12,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      story.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      story.moral,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

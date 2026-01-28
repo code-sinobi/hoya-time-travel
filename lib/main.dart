@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'core/utils/design_system_validator.dart';
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,9 +16,9 @@ void main() async {
 
   // Try loading from .env file
   try {
-    await dotenv.load(fileName: ".env");
+    await dotenv.load(fileName: '.env');
   } catch (e) {
-    debugPrint('No .env file found or error loading it: $e');
+    debugPrint('No .env file found or error retrieving it: $e');
   }
 
   // Initialize Supabase if config is present
@@ -61,7 +63,25 @@ class HoyaApp extends ConsumerWidget {
       theme: theme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      scrollBehavior: const AppScrollBehavior(),
+      builder: (context, child) {
+        // Run Design System Validation in Debug Mode
+        assert(() {
+          if (child != null) {
+            // We need a context to look up theme? No we have `theme` variable.
+            // But we need to ensure it runs only once or lazily?
+            // Calling it here is fine for now as it just prints warnings.
+            DesignSystemValidator.validateTheme(theme);
+          }
+          return true;
+        }());
+
+        // return AccessibilityTools(
+        //   checkFontOverflows: true,
+        //   minimumTapAreas: MinimumTapAreas.material,
+        //   child: child ?? const SizedBox.shrink(),
+        // );
+        return child ?? const SizedBox.shrink();
+      },
     );
   }
 }

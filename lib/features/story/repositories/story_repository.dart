@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_progress.dart';
 import '../models/story_models.dart';
@@ -27,6 +28,16 @@ class StoryRepository {
   final SupabaseClient _client;
 
   StoryRepository(this._client);
+
+  Future<List<Story>> getStories() async {
+    try {
+      final response = await _client.from('stories').select();
+      return (response as List).map((e) => Story.fromJson(e)).toList();
+    } catch (e) {
+      AppLogger.error('Error fetching stories', error: e);
+      return [];
+    }
+  }
 
   Future<UserProgress?> getProgress(String storyId) async {
     final userId = _client.auth.currentUser?.id;

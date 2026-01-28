@@ -6,97 +6,36 @@ part of 'app_theme.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
+String _$appThemeHash() => r'4dd0ea018465a5c2142df3e049af31a7e7620db1';
 
-@ProviderFor(CurrentEra)
-final currentEraProvider = CurrentEraProvider._();
+/// See also [appTheme].
+@ProviderFor(appTheme)
+final appThemeProvider = AutoDisposeProvider<ThemeData>.internal(
+  appTheme,
+  name: r'appThemeProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$appThemeHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-final class CurrentEraProvider extends $NotifierProvider<CurrentEra, EraType> {
-  CurrentEraProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'currentEraProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$currentEraHash();
-
-  @$internal
-  @override
-  CurrentEra create() => CurrentEra();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(EraType value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<EraType>(value),
-    );
-  }
-}
-
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AppThemeRef = AutoDisposeProviderRef<ThemeData>;
 String _$currentEraHash() => r'510e0b806714b849268256b3ccffe5589eec72c3';
 
-abstract class _$CurrentEra extends $Notifier<EraType> {
-  EraType build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<EraType, EraType>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<EraType, EraType>,
-              EraType,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
+/// See also [CurrentEra].
+@ProviderFor(CurrentEra)
+final currentEraProvider =
+    AutoDisposeNotifierProvider<CurrentEra, EraType>.internal(
+  CurrentEra.new,
+  name: r'currentEraProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$currentEraHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-@ProviderFor(appTheme)
-final appThemeProvider = AppThemeProvider._();
-
-final class AppThemeProvider
-    extends $FunctionalProvider<ThemeData, ThemeData, ThemeData>
-    with $Provider<ThemeData> {
-  AppThemeProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'appThemeProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$appThemeHash();
-
-  @$internal
-  @override
-  $ProviderElement<ThemeData> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  ThemeData create(Ref ref) {
-    return appTheme(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(ThemeData value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<ThemeData>(value),
-    );
-  }
-}
-
-String _$appThemeHash() => r'a60a3de48f58a1642665181d8703eb49f3538b09';
+typedef _$CurrentEra = AutoDisposeNotifier<EraType>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

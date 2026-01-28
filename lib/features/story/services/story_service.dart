@@ -22,7 +22,7 @@ class StoryService extends _$StoryService {
       final node = await repo.getStoryNode(targetId);
 
       if (node == null) {
-        return _errorNode("Node not found: $targetId");
+        return _errorNode('Node not found: $targetId');
       }
 
       // Save progress to Supabase
@@ -36,7 +36,7 @@ class StoryService extends _$StoryService {
       return node;
     } catch (e) {
       debugPrint('Story Load Failed: $e');
-      return _errorNode("Error loading story: $e");
+      return _errorNode('Error retrieving story: $e');
     }
   }
 
@@ -44,9 +44,9 @@ class StoryService extends _$StoryService {
     return StoryNode(
       id: 'error',
       type: NodeType.choice,
-      content: "The scrolls are faded here... \n($message)",
+      content: 'The scrolls are faded here... \n($message)',
       choices: [
-        StoryChoice(id: 'back', text: "Return to Portal", nextNodeId: null),
+        StoryChoice(id: 'back', text: 'Return to Portal', nextNodeId: null),
       ],
     );
   }

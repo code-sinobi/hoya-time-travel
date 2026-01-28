@@ -54,20 +54,21 @@ class _StoryViewState extends ConsumerState<StoryView> {
                           color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
                     child: SingleChildScrollView(
-                      child: Text(
-                        widget.node.content,
-                        style: theme.bodyStyle.copyWith(height: 1.6),
-                      )
-                          .animate(
-                            onComplete: (controller) =>
-                                setState(() => _showChoices = true),
-                          )
-                          .fadeIn(duration: 500.ms)
-                          .moveY(begin: 10, end: 0),
+                      child:
+                          Text(
+                                widget.node.content,
+                                style: theme.bodyStyle.copyWith(height: 1.6),
+                              )
+                              .animate(
+                                onComplete: (controller) =>
+                                    setState(() => _showChoices = true),
+                              )
+                              .fadeIn(duration: 500.ms)
+                              .moveY(begin: 10, end: 0),
                     ),
                   ),
                 ),

@@ -6,49 +6,20 @@ part of 'profile_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-
-@ProviderFor(UserProfile)
-final userProfileProvider = UserProfileProvider._();
-
-final class UserProfileProvider
-    extends $AsyncNotifierProvider<UserProfile, Profile?> {
-  UserProfileProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'userProfileProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$userProfileHash();
-
-  @$internal
-  @override
-  UserProfile create() => UserProfile();
-}
-
 String _$userProfileHash() => r'5a2b277c7622db43cf997e6e2e36b25594639822';
 
-abstract class _$UserProfile extends $AsyncNotifier<Profile?> {
-  FutureOr<Profile?> build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Profile?>, Profile?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Profile?>, Profile?>,
-              AsyncValue<Profile?>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
+/// See also [UserProfile].
+@ProviderFor(UserProfile)
+final userProfileProvider =
+    AutoDisposeAsyncNotifierProvider<UserProfile, Profile?>.internal(
+  UserProfile.new,
+  name: r'userProfileProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$userProfileHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$UserProfile = AutoDisposeAsyncNotifier<Profile?>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

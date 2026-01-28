@@ -6,60 +6,20 @@ part of 'story_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
+String _$storyServiceHash() => r'f6763dcf940dc64d507f52ae39d15ba9c60971f0';
 
+/// See also [StoryService].
 @ProviderFor(StoryService)
-final storyServiceProvider = StoryServiceProvider._();
+final storyServiceProvider =
+    AutoDisposeNotifierProvider<StoryService, void>.internal(
+  StoryService.new,
+  name: r'storyServiceProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$storyServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-final class StoryServiceProvider extends $NotifierProvider<StoryService, void> {
-  StoryServiceProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'storyServiceProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$storyServiceHash();
-
-  @$internal
-  @override
-  $ProviderElement<StoryService> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  StoryService create() => StoryService();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(void value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<void>(value),
-    );
-  }
-}
-
-String _$storyServiceHash() => r'3596d7aad0781c69fdddd18b190d82ac928f703f';
-
-abstract class _$StoryService extends $Notifier<void> {
-  void build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<void, void>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<void, void>,
-              void,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
+typedef _$StoryService = AutoDisposeNotifier<void>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

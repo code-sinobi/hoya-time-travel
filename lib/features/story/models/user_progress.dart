@@ -25,6 +25,7 @@ class UserProgress {
     this.lastPlayedAt,
   });
 
-  factory UserProgress.fromJson(Map<String, dynamic> json) => _$UserProgressFromJson(json);
+  factory UserProgress.fromJson(Map<String, dynamic> json) =>
+      _$UserProgressFromJson(json);
   Map<String, dynamic> toJson() => _$UserProgressToJson(this);
 }

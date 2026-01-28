@@ -76,7 +76,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           ? _buildLoadingState(theme)
           : _currentNode != null
           ? StoryView(node: _currentNode!, onChoiceSelected: _handleChoice)
-          : Center(child: Text("Error loading story", style: theme.bodyStyle)),
+          : Center(
+              child: Text('Error retrieving story', style: theme.bodyStyle),
+            ),
     );
   }
 
@@ -88,7 +90,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
           CircularProgressIndicator(color: theme.primaryColor),
           const SizedBox(height: 16),
           Text(
-            "Consulting the Timeline...",
+            'Consulting the Timeline...',
             style: theme.bodyStyle.copyWith(color: theme.primaryColor),
           ),
         ],

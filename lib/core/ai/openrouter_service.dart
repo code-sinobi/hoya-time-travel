@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'openrouter_service.g.dart';
 
 /// OpenRouter API Service
 /// Uses the OpenRouter unified API for AI model access
-/// Default model: GLM 4.5 Air (free)
+/// Default model: Gemma 3n E4B IT (free)
 @Riverpod(keepAlive: true)
 OpenRouterService openRouterService(Ref ref) {
   const apiKey = String.fromEnvironment('OPENROUTER_API_KEY', defaultValue: '');
@@ -25,7 +26,7 @@ class OpenRouterService {
   final String apiKey;
   static const String _baseUrl =
       'https://openrouter.ai/api/v1/chat/completions';
-  static const String _defaultModel = 'z-ai/glm-4.5-air:free';
+  static const String _defaultModel = 'google/gemma-3n-e4b-it:free';
 
   // App attribution headers for OpenRouter leaderboards
   static const Map<String, String> _appHeaders = {
@@ -49,23 +50,25 @@ class OpenRouterService {
     }
 
     try {
-      final response = await http.post(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $apiKey',
-          ..._appHeaders,
-        },
-        body: jsonEncode({
-          'model': model ?? _defaultModel,
-          'messages': [
-            {'role': 'system', 'content': systemPrompt},
-            {'role': 'user', 'content': userPrompt},
-          ],
-          'temperature': 0.7,
-          'max_tokens': 4096,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse(_baseUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $apiKey',
+              ..._appHeaders,
+            },
+            body: jsonEncode({
+              'model': model ?? _defaultModel,
+              'messages': [
+                {'role': 'system', 'content': systemPrompt},
+                {'role': 'user', 'content': userPrompt},
+              ],
+              'temperature': 0.7,
+              'max_tokens': 4096,
+            }),
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode != 200) {
         debugPrint(

@@ -6,46 +6,22 @@ part of 'supabase_config.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-
-@ProviderFor(supabaseConfig)
-final supabaseConfigProvider = SupabaseConfigProvider._();
-
-final class SupabaseConfigProvider
-    extends $FunctionalProvider<SupabaseConfig, SupabaseConfig, SupabaseConfig>
-    with $Provider<SupabaseConfig> {
-  SupabaseConfigProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'supabaseConfigProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$supabaseConfigHash();
-
-  @$internal
-  @override
-  $ProviderElement<SupabaseConfig> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  SupabaseConfig create(Ref ref) {
-    return supabaseConfig(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SupabaseConfig value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SupabaseConfig>(value),
-    );
-  }
-}
-
 String _$supabaseConfigHash() => r'622593f2ff3cc517cd7cea7492bfd2484d08838d';
+
+/// See also [supabaseConfig].
+@ProviderFor(supabaseConfig)
+final supabaseConfigProvider = Provider<SupabaseConfig>.internal(
+  supabaseConfig,
+  name: r'supabaseConfigProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$supabaseConfigHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SupabaseConfigRef = ProviderRef<SupabaseConfig>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -6,132 +6,60 @@ part of 'story_repository.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, type=warning
-
-@ProviderFor(storyRepository)
-final storyRepositoryProvider = StoryRepositoryProvider._();
-
-final class StoryRepositoryProvider
-    extends
-        $FunctionalProvider<StoryRepository, StoryRepository, StoryRepository>
-    with $Provider<StoryRepository> {
-  StoryRepositoryProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'storyRepositoryProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$storyRepositoryHash();
-
-  @$internal
-  @override
-  $ProviderElement<StoryRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  StoryRepository create(Ref ref) {
-    return storyRepository(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(StoryRepository value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<StoryRepository>(value),
-    );
-  }
-}
-
 String _$storyRepositoryHash() => r'dc9a138b3cdd77133cc7d37fd548de187aecf912';
 
-@ProviderFor(allUserProgress)
-final allUserProgressProvider = AllUserProgressProvider._();
+/// See also [storyRepository].
+@ProviderFor(storyRepository)
+final storyRepositoryProvider = Provider<StoryRepository>.internal(
+  storyRepository,
+  name: r'storyRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$storyRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-final class AllUserProgressProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<UserProgress>>,
-          List<UserProgress>,
-          FutureOr<List<UserProgress>>
-        >
-    with
-        $FutureModifier<List<UserProgress>>,
-        $FutureProvider<List<UserProgress>> {
-  AllUserProgressProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'allUserProgressProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$allUserProgressHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<List<UserProgress>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<List<UserProgress>> create(Ref ref) {
-    return allUserProgress(ref);
-  }
-}
-
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StoryRepositoryRef = ProviderRef<StoryRepository>;
 String _$allUserProgressHash() => r'0c0e87661a67cdd79f40167dc294d41d10492d1d';
 
-/// Provider that returns a Set of completed story IDs for quick lookup
+/// See also [allUserProgress].
+@ProviderFor(allUserProgress)
+final allUserProgressProvider =
+    AutoDisposeFutureProvider<List<UserProgress>>.internal(
+  allUserProgress,
+  name: r'allUserProgressProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allUserProgressHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
 
-@ProviderFor(completedStoryIds)
-final completedStoryIdsProvider = CompletedStoryIdsProvider._();
-
-/// Provider that returns a Set of completed story IDs for quick lookup
-
-final class CompletedStoryIdsProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<Set<String>>,
-          Set<String>,
-          FutureOr<Set<String>>
-        >
-    with $FutureModifier<Set<String>>, $FutureProvider<Set<String>> {
-  /// Provider that returns a Set of completed story IDs for quick lookup
-  CompletedStoryIdsProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'completedStoryIdsProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$completedStoryIdsHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<Set<String>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<Set<String>> create(Ref ref) {
-    return completedStoryIds(ref);
-  }
-}
-
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AllUserProgressRef = AutoDisposeFutureProviderRef<List<UserProgress>>;
 String _$completedStoryIdsHash() => r'591e04f3e284f770d24ee12ca122aec39ef4735e';
+
+/// Provider that returns a Set of completed story IDs for quick lookup
+///
+/// Copied from [completedStoryIds].
+@ProviderFor(completedStoryIds)
+final completedStoryIdsProvider =
+    AutoDisposeFutureProvider<Set<String>>.internal(
+  completedStoryIds,
+  name: r'completedStoryIdsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$completedStoryIdsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CompletedStoryIdsRef = AutoDisposeFutureProviderRef<Set<String>>;
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
