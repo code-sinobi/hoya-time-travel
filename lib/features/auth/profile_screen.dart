@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:go_router/go_router.dart';
 import '../../core/theme/era_theme.dart';
 import '../../core/widgets/galactic_background.dart';
 import '../story/repositories/story_repository.dart';
@@ -151,25 +152,28 @@ class ProfileScreen extends ConsumerWidget {
                         const SizedBox(height: 30),
 
                         // Coin Stats
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _StatCoin(
-                              label: 'LEVEL',
-                              value: '${profileAsync.value?.level ?? 1}',
-                              icon: Icons.star_border,
-                            ),
-                            _StatCoin(
-                              label: 'XP',
-                              value: '${profileAsync.value?.xp ?? 0}',
-                              icon: Icons.auto_awesome,
-                            ),
-                            _StatCoin(
-                              label: 'WISDOM',
-                              value: '${progressAsync.value?.length ?? 0}',
-                              icon: Icons.menu_book,
-                            ),
-                          ],
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _StatCoin(
+                                label: 'LEVEL',
+                                value: '${profileAsync.value?.level ?? 1}',
+                                icon: Icons.star_border,
+                              ),
+                              _StatCoin(
+                                label: 'XP',
+                                value: '${profileAsync.value?.xp ?? 0}',
+                                icon: Icons.auto_awesome,
+                              ),
+                              _StatCoin(
+                                label: 'WISDOM',
+                                value: '${progressAsync.value?.length ?? 0}',
+                                icon: Icons.menu_book,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -232,6 +236,13 @@ class ProfileScreen extends ConsumerWidget {
                     icon: Icons.cloud_sync_outlined,
                     label: 'ARCHIVE SYNC',
                     onTap: () {},
+                  ),
+                  _MenuButton(
+                    icon: Icons.auto_awesome,
+                    label: 'NARRATIVE ORCHESTRATOR',
+                    onTap: () {
+                      GoRouter.of(context).push('/admin');
+                    },
                   ),
 
                   const SizedBox(height: 48),

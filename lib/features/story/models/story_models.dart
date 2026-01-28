@@ -28,7 +28,12 @@ class Story {
     this.isRift = false,
   });
 
-  factory Story.fromJson(Map<String, dynamic> json) => _$StoryFromJson(json);
+  factory Story.fromJson(Map<String, dynamic> json) {
+    if (json['description'] == null) {
+      json['description'] = '';
+    }
+    return _$StoryFromJson(json);
+  }
   Map<String, dynamic> toJson() => _$StoryToJson(this);
 }
 

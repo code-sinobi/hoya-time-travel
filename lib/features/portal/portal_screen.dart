@@ -60,7 +60,7 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
             left: 0,
             right: 0,
             height: 400,
-            child: const Center(child: TemporalConduit()),
+            child: const IgnorePointer(child: Center(child: TemporalConduit())),
           ),
 
           // LAYER 3: Content (SafeArea)
