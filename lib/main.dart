@@ -26,10 +26,10 @@ void main() async {
   String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
   String supabaseKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
 
-  if (supabaseUrl.isEmpty) {
+  if (supabaseUrl.isEmpty && dotenv.isInitialized) {
     supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
   }
-  if (supabaseKey.isEmpty) {
+  if (supabaseKey.isEmpty && dotenv.isInitialized) {
     supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   }
 
@@ -91,7 +91,7 @@ class AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-    PointerDeviceKind.touch,
-    PointerDeviceKind.mouse,
-  };
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }

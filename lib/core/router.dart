@@ -13,6 +13,7 @@ import '../features/library/library_screen.dart';
 import '../features/explore/explore_screen.dart';
 import '../features/rifts/rifts_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
+import 'package:hoya_app/features/story/widgets/admin_dashboard.dart';
 import 'router/routes.dart';
 
 import 'widgets/scaffold_with_navbar.dart';
@@ -110,6 +111,10 @@ GoRouter router(Ref ref) {
           final id = state.pathParameters['id']!;
           return StoryScreen(storyId: id);
         },
+      ),
+      GoRoute(
+        path: '/admin',
+        builder: (context, state) => const AdminDashboard(),
       ),
     ],
   );

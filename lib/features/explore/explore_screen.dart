@@ -139,7 +139,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 behavior: HitTestBehavior.translucent,
                 onPanUpdate: (d) {
                   setState(() {
-                    debugPrint('Scanner Pan: ${d.delta}');
                     // Map screen movement to map movement based on active scale
                     final scale =
                         _transformController.value.getMaxScaleOnAxis();

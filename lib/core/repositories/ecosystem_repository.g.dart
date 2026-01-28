@@ -1,31 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'openrouter_service.dart';
+part of 'ecosystem_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$openRouterServiceHash() => r'8c6db5f26f61f16e259c716f29fcfc40591926e3';
+String _$ecosystemRepositoryHash() =>
+    r'6aafc8c0a43fde5d10feaa7aefe8814515f21eca';
 
-/// OpenRouter API Service
-/// Uses the OpenRouter unified API for AI model access
-/// Default model: Gemma 3n E4B IT (free)
-///
-/// Copied from [openRouterService].
-@ProviderFor(openRouterService)
-final openRouterServiceProvider = Provider<OpenRouterService>.internal(
-  openRouterService,
-  name: r'openRouterServiceProvider',
+/// See also [ecosystemRepository].
+@ProviderFor(ecosystemRepository)
+final ecosystemRepositoryProvider = Provider<EcosystemRepository>.internal(
+  ecosystemRepository,
+  name: r'ecosystemRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$openRouterServiceHash,
+      : _$ecosystemRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef OpenRouterServiceRef = ProviderRef<OpenRouterService>;
+typedef EcosystemRepositoryRef = ProviderRef<EcosystemRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
