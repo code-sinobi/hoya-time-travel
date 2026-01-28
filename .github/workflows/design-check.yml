@@ -18,6 +18,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create dummy .env
+        run: echo "SUPABASE_URL=dummy" > .env
+
       - name: Get Dependencies
         run: flutter pub get
 
@@ -35,6 +38,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create dummy .env
+        run: echo "SUPABASE_URL=dummy" > .env
+
       - name: Get Dependencies
         run: flutter pub get
 
@@ -51,6 +57,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      - name: Create dummy .env
+        run: echo "SUPABASE_URL=dummy" > .env
 
       - name: Get Dependencies
         run: flutter pub get
