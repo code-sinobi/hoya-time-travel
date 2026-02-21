@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,15 +6,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/era_theme.dart';
-import '../story/models/story_models.dart';
-import '../story/repositories/story_repository.dart';
-import 'widgets/astral_map_node.dart';
-import 'widgets/temporal_web_painter.dart';
-import 'widgets/timeline_scrubber.dart';
-
-final storiesProvider = FutureProvider<List<Story>>((ref) async {
-  return ref.watch(storyRepositoryProvider).getStories();
-});
+import '../rifts/domain/anomaly.dart';
+import '../rifts/presentation/anomaly_provider.dart';
+import 'domain/era.dart';
+import 'widgets/temporal_radar.dart';
+import 'widgets/anomaly_blip.dart';
+import 'widgets/futures_tab.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -25,373 +22,208 @@ class ExploreScreen extends ConsumerStatefulWidget {
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen>
     with TickerProviderStateMixin {
-  final TransformationController _transformController =
-      TransformationController();
-  late AnimationController _pulseController;
-
-  String _selectedEra = 'MYTHIC';
-
-  // Scanner State
-  bool _isScannerActive = false;
-  Offset _scannerPosition = Offset.zero;
-  final Set<String> _scannedNodeIds = {};
+  late TabController _tabController;
+  Era _selectedEra = Era.mythic;
+  final Set<Era> _exploredEras = {
+    Era.mythic,
+    Era.ancient,
+    Era.medieval,
+  }; // Mock explored eras
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(vsync: this, duration: 3.seconds)
-      ..repeat();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _transformController.dispose();
-    _pulseController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final storiesAsync = ref.watch(storiesProvider);
-
     return Scaffold(
       backgroundColor: const Color(0xFF15151A),
-      body: Stack(
-        children: [
-          // 1. Map Layer (Interactive)
-          InteractiveViewer(
-            transformationController: _transformController,
-            boundaryMargin: const EdgeInsets.all(1000),
-            minScale: 0.5,
-            maxScale: 4.0,
-            panEnabled: !_isScannerActive,
-            child: storiesAsync.when(
-              data: (stories) {
-                return SizedBox(
-                  width: 1500,
-                  height: 1000,
-                  child: AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, _) {
-                      return Stack(
-                        children: [
-                          // Temporal Web Painter
-                          CustomPaint(
-                            size: const Size(1500, 1000),
-                            painter: TemporalWebPainter(
-                              color: MythicColors.bronze,
-                              activeEra: _selectedEra,
-                              nodes: stories,
-                              animationValue: _pulseController.value,
-                            ),
-                          ),
-                          // Scanner Lens
-                          if (_isScannerActive)
-                            Positioned(
-                              left: _scannerPosition.dx - 100,
-                              top: _scannerPosition.dy - 100,
-                              child: Container(
-                                width: 200,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.cyanAccent,
-                                    width: 2,
-                                  ),
-                                  gradient: RadialGradient(
-                                    colors: [
-                                      Colors.cyanAccent.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.cyanAccent
-                                          .withValues(alpha: 0.2),
-                                      blurRadius: 20,
-                                    ),
-                                  ],
-                                ),
-                              )
-                                  .animate(onPlay: (c) => c.repeat())
-                                  .rotate(duration: 5.seconds),
-                            ),
-                          // Nodes
-                          ..._buildNodes(stories),
-                        ],
-                      );
-                    },
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, s) => const SizedBox.shrink(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: SafeArea(
+          child: Container(
+            color: Colors.black26,
+            child: TabBar(
+              controller: _tabController,
+              indicatorColor: MythicColors.bronze,
+              labelColor: MythicColors.bronze,
+              unselectedLabelColor: Colors.white38,
+              labelStyle: GoogleFonts.cinzel(fontWeight: FontWeight.bold),
+              tabs: const [
+                Tab(text: 'RADAR'),
+                Tab(text: 'FUTURES'),
+              ],
             ),
           ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _buildRadarTab(),
+          const FuturesTab(),
+        ],
+      ),
+    );
+  }
 
-          // 2. Scanner Gesture Layer (Only when active)
-          if (_isScannerActive)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanUpdate: (d) {
-                  setState(() {
-                    // Map screen movement to map movement based on active scale
-                    final scale =
-                        _transformController.value.getMaxScaleOnAxis();
-                    _scannerPosition += d.delta / scale;
-                  });
-                },
-                child: Container(color: Colors.transparent),
-              ),
+  Widget _buildRadarTab() {
+    // Watch anomalies stream
+    final anomaliesAsync = ref.watch(anomaliesStreamProvider);
+
+    return Stack(
+      children: [
+        // Background - subtle grid or stars
+        Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.center,
+              radius: 1.5,
+              colors: [
+                Color(0xFF1A1A2E),
+                Color(0xFF0A0A0F),
+              ],
             ),
+          ),
+        ),
 
-          // 2. HUD Overlay
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        // Radar Content
+        Center(
+          child: anomaliesAsync.when(
+            data: (anomalies) {
+              final blips = _mapAnomaliesToBlips(anomalies);
+              return TemporalRadar(
+                anomalies: blips,
+                currentEra: _selectedEra,
+                exploredEras: _exploredEras,
+                onEraSelected: (era) => setState(() => _selectedEra = era),
+                onAnomalyTapped: _handleAnomalyTap,
+                onScanComplete: () {
+                  // Optional: Trigger haptic or sound
+                },
+              );
+            },
+            loading: () =>
+                const CircularProgressIndicator(color: Color(0xFF00FFFF)),
+            error: (e, s) => Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header
-                _buildHeader(),
-
-                const Spacer(),
-
-                // Scanner Toggle
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 24, bottom: 24),
-                    child: FloatingActionButton.extended(
-                      backgroundColor: _isScannerActive
-                          ? Colors.cyanAccent
-                          : const Color(0xFF2A2A35),
-                      foregroundColor:
-                          _isScannerActive ? Colors.black : Colors.white,
-                      onPressed: () {
-                        setState(() {
-                          _isScannerActive = !_isScannerActive;
-                          // Reset scanner to center of map if activating
-                          if (_isScannerActive) {
-                            _scannerPosition = const Offset(750, 500);
-                          }
-                        });
-                      },
-                      icon: Icon(
-                        _isScannerActive ? Icons.radar : Icons.radar_outlined,
-                      ),
-                      label: Text(
-                        _isScannerActive
-                            ? 'SCANNING ACTIVE'
-                            : 'ACTIVATE SCANNER',
-                      ),
-                    ),
-                  ),
+                const Icon(Icons.signal_wifi_off, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'RADAR OFFLINE',
+                  style: GoogleFonts.orbitron(color: Colors.red),
                 ),
-
-                const Spacer(),
-
-                // Era Timeline Control (Bottom)
-                TimelineScrubber(
-                  selectedEra: _selectedEra,
-                  onEraChanged: (era) {
-                    setState(() => _selectedEra = era);
-                  },
+                Text(
+                  'Error: $e',
+                  style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
 
-  // Helper to filter and build nodes
-  List<Widget> _buildNodes(List<Story> stories) {
-    // Filter Logic
-    final visibleStories = stories.where((s) {
-      if (_selectedEra == 'FUTURE') {
-        return true;
-      }
-      if (_selectedEra == 'MYTHIC') {
-        return s.eraId == 'MYTHIC' || s.eraId == 'ANCIENT';
-      }
-      if (_selectedEra == 'MODERN') {
-        return s.eraId == 'MODERN' || s.eraId == 'INDUSTRIAL';
-      }
-      return s.eraId == _selectedEra;
-    }).toList();
-
-    return visibleStories.map((story) {
-      // Scanner Logic
-      // If it's a "Hidden" node (let's say all Rifts are hidden by default unless scanned?),
-      // we check distance.
-      final bool isHidden = story.isRift && !_isNodeScanned(story);
-
-      // Opacity
-      final double opacity = isHidden ? 0.0 : 1.0;
-
-      // If hidden, and scanner is close, show partial ghost?
-      double scannerOpacity = 0.0;
-      if (_isScannerActive) {
-        final nodePos = Offset(
-          story.xCoordinate * 1500,
-          story.yCoordinate * 1000,
-        );
-        final dist = (nodePos - _scannerPosition).distance;
-        if (dist < 100) {
-          // Lens radius
-          scannerOpacity = (1 - (dist / 100)).clamp(0.0, 1.0);
-
-          // Auto-discover nodes that are clearly within the scanner lens
-          if (scannerOpacity > 0.8 && story.isRift) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && !_scannedNodeIds.contains(story.id)) {
-                setState(() => _scannedNodeIds.add(story.id));
-              }
-            });
-          }
-        }
-      }
-
-      final finalOpacity = max(opacity, scannerOpacity);
-
-      return Positioned(
-        left: story.xCoordinate * 1500,
-        top: story.yCoordinate * 1000,
-        child: Opacity(
-          opacity: finalOpacity,
-          child: AstralMapNode(
-            data: {
-              'name': story.title,
-              'isRift': story.isRift,
-              'era': story.eraId,
-            },
-            isLocked: isHidden &&
-                scannerOpacity < 0.8, // Lock interaction if not fully scanned
-            onTap: () {
-              if (finalOpacity > 0.5) _animateToNode(story);
-            },
+        // Hint Text
+        Positioned(
+          bottom: 32,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Text(
+              'DIVINING TIMELINE...',
+              style: GoogleFonts.shareTechMono(
+                color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
+                letterSpacing: 2,
+              ),
+            ).animate(onPlay: (c) => c.repeat(reverse: true)).fadeIn(),
           ),
         ),
+      ],
+    );
+  }
+
+  List<AnomalyBlipData> _mapAnomaliesToBlips(List<Anomaly> anomalies) {
+    // Helper to distribute blips randomly but deterministically based on ID
+    return anomalies.map((anomaly) {
+      final seed = anomaly.id.codeUnits.fold(0, (p, c) => p + c);
+      final random = math.Random(seed);
+
+      // Use parsed era from domain model
+      final era = anomaly.parsedEra;
+
+      // Angle roughly within the era's region (+/- 30 degrees)
+      final baseAngle = era.radarAngle;
+      final variance = (random.nextDouble() - 0.5) * (math.pi / 3);
+      final angle = (baseAngle + variance) % (2 * math.pi); // Normalize
+
+      // Distance between 0.4 and 0.9 of radius
+      final distance = 0.4 + (random.nextDouble() * 0.5);
+
+      return AnomalyBlipData(
+        id: anomaly.id,
+        era: era,
+        angle: angle,
+        distance: distance,
+        severity: anomaly.severity,
+        title: anomaly.title,
       );
     }).toList();
   }
 
-  bool _isNodeScanned(Story s) {
-    return _scannedNodeIds.contains(s.id);
-  }
-
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'NAVIGATOR',
-                style: GoogleFonts.cinzelDecorative(
-                  fontSize: 32,
-                  color: _isScannerActive
-                      ? Colors.cyanAccent
-                      : MythicColors.bronze,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    const BoxShadow(color: Colors.black, blurRadius: 4),
-                  ],
-                ),
-              ),
-              Text(
-                _isScannerActive ? 'TEMPORAL SCANNING...' : 'ARCHIVE VII',
-                style: GoogleFonts.orbitron(
-                  fontSize: 12,
-                  color: (_isScannerActive
-                          ? Colors.cyanAccent
-                          : MythicColors.parchment)
-                      .withValues(alpha: 0.7),
-                  letterSpacing: 2,
-                ),
-              ).animate(target: _isScannerActive ? 1 : 0).shimmer(),
-            ],
-          ),
-          // Compass Icon
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color:
-                    (_isScannerActive ? Colors.cyanAccent : MythicColors.bronze)
-                        .withValues(alpha: 0.5),
-              ),
-              color: Colors.black26,
-            ),
-            child: Center(
-              child: Icon(
-                _isScannerActive ? Icons.radar : Icons.explore,
-                color:
-                    _isScannerActive ? Colors.cyanAccent : MythicColors.bronze,
-                size: 28,
-              ).animate(onPlay: (c) => c.repeat()).rotate(duration: 10.seconds),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _animateToNode(Story story) {
-    final targetScale = 2.0;
-    final x = -(story.xCoordinate * 1000 * targetScale) +
-        (MediaQuery.of(context).size.width / 2);
-    final y = -(story.yCoordinate * 1000 * targetScale) +
-        (MediaQuery.of(context).size.height / 2);
-
-    final matrix = Matrix4.identity()
-      ..setTranslationRaw(x, y, 0.0)
-      ..multiply(
-        Matrix4.diagonal3Values(targetScale, targetScale, targetScale),
-      );
-
-    final animation =
-        Matrix4Tween(begin: _transformController.value, end: matrix).animate(
-      CurvedAnimation(
-        parent: AnimationController(vsync: this, duration: 800.ms)..forward(),
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    animation.addListener(() {
-      _transformController.value = animation.value;
-    });
-
-    _showNodeDetails(context, story);
-  }
-
-  void _showNodeDetails(BuildContext context, Story story) {
+  void _handleAnomalyTap(AnomalyBlipData blip) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Color(0xFF1A1A24),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(top: BorderSide(color: MythicColors.bronze, width: 2)),
-          boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 20)],
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A24),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(
+            top: BorderSide(
+              color: blip.severity == AnomalySeverity.critical
+                  ? Colors.red
+                  : const Color(0xFF00FFFF),
+              width: 2,
+            ),
+          ),
+          boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.warning_amber,
+                  color: blip.severity == AnomalySeverity.critical
+                      ? Colors.red
+                      : Colors.amber,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'ANOMALY DETECTED',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
             Text(
-              story.title.toUpperCase(),
+              blip.title.toUpperCase(),
               style: GoogleFonts.cinzelDecorative(
                 fontSize: 24,
                 color: MythicColors.parchment,
@@ -400,37 +232,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'ERA: ${story.eraId}',
+              'ERA: ${blip.era.label}',
               style: GoogleFonts.spaceMono(
-                color: MythicColors.bronze,
+                color: const Color(0xFF00FFFF),
                 fontSize: 12,
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              story.description,
-              style: GoogleFonts.exo2(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: MythicColors.bronze,
-                  foregroundColor: Colors.black,
+                  backgroundColor:
+                      const Color(0xFF00FFFF).withValues(alpha: 0.2),
+                  foregroundColor: const Color(0xFF00FFFF),
+                  side: const BorderSide(color: Color(0xFF00FFFF)),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: () {
-                  Navigator.pop(context); // Close modal
-                  if (story.isRift) {
-                    context.go('/rifts');
-                  } else {
-                    context.go('/story/${story.id}');
-                  }
+                  Navigator.pop(context);
+                  context.go('/rifts'); // Navigate to dashboard
                 },
                 child: Text(
-                  'INITIATE JUMP',
-                  style: GoogleFonts.cinzel(fontWeight: FontWeight.bold),
+                  'ANALYZE IN DASHBOARD',
+                  style: GoogleFonts.orbitron(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -440,4 +265,4 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       ),
     );
   }
-} // End of State logic (replacing the previous _animateToNode... end)
+}
