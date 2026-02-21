@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/era_theme.dart';
-import 'echoes_controller.dart';
 
-class EchoesSheet extends ConsumerWidget {
-  const EchoesSheet({super.key});
+class EchoesSheet extends StatelessWidget {
+  final List<dynamic> echoes;
+
+  const EchoesSheet({super.key, required this.echoes});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final echoesAsync = ref.watch(echoesControllerProvider);
-
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
-        color: Color(0xFF15151A),
+        color: Color(0xFF1A1A22),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
       ),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -28,136 +27,109 @@ class EchoesSheet extends ConsumerWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: MythicColors.stoneGray.withValues(alpha: 0.3),
+              color: Colors.white10,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            'MEMORY ARCHIVE',
-            style: GoogleFonts.cinzelDecorative(
-              fontSize: 20,
+            'YOUR TEMPORAL ECHOES',
+            style: GoogleFonts.cinzel(
               color: MythicColors.bronze,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
-              letterSpacing: 2,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Echoes of your journey across time.',
+            'Threads of your previous incarnations across the timeline.',
             style: GoogleFonts.cormorantGaramond(
-              fontSize: 16,
-              color: MythicColors.parchment.withValues(alpha: 0.7),
+              color: MythicColors.parchment.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: echoesAsync.when(
-              data: (echoes) {
-                if (echoes.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.hourglass_empty,
-                          size: 48,
-                          color: MythicColors.stoneGray.withValues(
-                            alpha: 0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No echoes yet recorded.',
-                          style: GoogleFonts.cormorantGaramond(
-                            fontSize: 18,
-                            color: MythicColors.stoneGray,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  itemCount: echoes.length,
-                  separatorBuilder: (c, i) => Divider(
-                    color: MythicColors.bronze.withValues(alpha: 0.1),
+            child: echoes.isEmpty
+                ? _buildEmptyState()
+                : ListView.separated(
+                    itemCount: echoes.length,
+                    separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+                    itemBuilder: (context, index) {
+                      final echo = echoes[index];
+                      return _EchoTile(echo: echo);
+                    },
                   ),
-                  itemBuilder: (context, index) {
-                    final echo = echoes[index];
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: MythicColors.deepIndigo.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: MythicColors.bronze.withValues(
-                              alpha: 0.3,
-                            ),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome,
-                          color: MythicColors.bronze,
-                          size: 20,
-                        ),
-                      ),
-                      title: Text(
-                        _formatTag(echo.echoTag),
-                        style: GoogleFonts.cinzel(
-                          color: MythicColors.parchment,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        echo.description,
-                        style: GoogleFonts.cormorantGaramond(
-                          color: MythicColors.stoneGray,
-                          fontSize: 14,
-                        ),
-                      ),
-                      trailing: Text(
-                        DateFormat('MMM d').format(echo.earnedAt),
-                        style: GoogleFonts.spaceMono(
-                          color: MythicColors.stoneGray.withValues(alpha: 0.5),
-                          fontSize: 10,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(
-                child: CircularProgressIndicator(
-                  color: MythicColors.bronze,
-                ),
-              ),
-              error: (err, stack) => Center(
-                child: Text(
-                  'Error: $err',
-                  style: const TextStyle(
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            ),
           ),
         ],
       ),
     );
   }
 
-  String _formatTag(String tag) {
-    return tag
-        .split('_')
-        .map(
-          (word) => word.isEmpty
-              ? ''
-              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
-        )
-        .join(' ');
+  Widget _buildEmptyState() {
+    return Center(
+      child: Opacity(
+        opacity: 0.3,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.blur_on, size: 48, color: Colors.white),
+            const SizedBox(height: 16),
+            Text(
+              'NO ECHOES FOUND',
+              style: GoogleFonts.orbitron(fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EchoTile extends StatelessWidget {
+  final dynamic echo;
+
+  const _EchoTile({required this.echo});
+
+  @override
+  Widget build(BuildContext context) {
+    final date = DateTime.parse(echo['created_at']);
+    final formattedDate = DateFormat('yyyy-MM-dd • HH:mm').format(date);
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: MythicColors.bronze.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(Icons.waves, color: MythicColors.bronze, size: 20),
+      ),
+      title: Text(
+        echo['title'] ?? 'Temporal Echo',
+        style: GoogleFonts.exo2(color: MythicColors.parchment),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 4),
+          Text(
+            echo['era_id'] ?? 'Unknown Era',
+            style: GoogleFonts.shareTechMono(
+              color: MythicColors.stoneGray,
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            formattedDate,
+            style: const TextStyle(color: Colors.white24, fontSize: 10),
+          ),
+        ],
+      ),
+      trailing: const Icon(Icons.chevron_right, color: Colors.white10),
+    );
   }
 }

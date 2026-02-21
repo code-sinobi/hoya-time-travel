@@ -1,133 +1,74 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-import '../domain/era.dart';
-
-/// Overlay widget that creates a fog-of-war effect over unexplored eras.
-/// Unexplored sections of the radar appear obscured with animated fog.
 class FogOverlay extends StatelessWidget {
-  /// Set of eras that have been explored (no fog)
-  final Set<Era> exploredEras;
+  final Set<String> exploredEras;
 
-  /// Radius matching the radar
-  final double radius;
-
-  /// Fog color (typically dark with opacity)
-  final Color fogColor;
-
-  const FogOverlay({
-    super.key,
-    required this.exploredEras,
-    required this.radius,
-    this.fogColor = const Color(0xCC0A0A0F),
-  });
+  const FogOverlay({super.key, required this.exploredEras});
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(radius * 2, radius * 2),
-      painter: _FogPainter(
-        exploredEras: exploredEras,
-        radius: radius,
-        fogColor: fogColor,
+    return IgnorePointer(
+      child: CustomPaint(
+        size: Size.infinite,
+        painter: _FogPainter(exploredEras: exploredEras),
       ),
     );
   }
 }
 
 class _FogPainter extends CustomPainter {
-  final Set<Era> exploredEras;
-  final double radius;
-  final Color fogColor;
+  final Set<String> exploredEras;
 
-  _FogPainter({
-    required this.exploredEras,
-    required this.radius,
-    required this.fogColor,
-  });
+  _FogPainter({required this.exploredEras});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
+    final center = size.center(Offset.zero);
+    final radius = size.width * 0.45;
 
-    // For each unexplored era, draw a foggy arc
-    for (final era in Era.values) {
-      if (!exploredEras.contains(era)) {
-        _drawFogSection(canvas, center, era);
-      }
-    }
-  }
-
-  void _drawFogSection(Canvas canvas, Offset center, Era era) {
-    // Calculate the arc for this era (each era gets ~72 degrees = 1.256 radians)
-    const regionSize = (2 * math.pi) / 5; // 5 eras
-    final startAngle = era.radarAngle - (regionSize / 2);
-
-    // Create gradient for fog effect
-    final fogPaint = Paint()
+    // Outer Fog (Radial)
+    final outerPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          fogColor.withValues(alpha: 0.9),
-          fogColor.withValues(alpha: 0.6),
-          fogColor.withValues(alpha: 0.3),
+          Colors.transparent,
+          Colors.black.withValues(alpha: 0.2),
+          Colors.black.withValues(alpha: 0.8),
         ],
-        stops: const [0.0, 0.6, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+        stops: const [0.7, 0.85, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.5));
 
-    // Draw the fog arc
-    final path = Path()
-      ..moveTo(center.dx, center.dy)
-      ..arcTo(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        regionSize,
-        false,
-      )
-      ..close();
+    canvas.drawRect(Offset.zero & size, outerPaint);
 
-    canvas.drawPath(path, fogPaint);
+    // Era-based Fog Arcs (Mock - Assume 3 sectors)
+    final allEras = ['MYTHIC', 'ANCIENT', 'MODERN'];
+    const sectorAngle = (math.pi * 2) / 3;
 
-    // Add swirling fog texture lines
-    _drawFogSwirls(canvas, center, startAngle, regionSize);
-  }
+    final fogPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
 
-  void _drawFogSwirls(
-    Canvas canvas,
-    Offset center,
-    double startAngle,
-    double regionSize,
-  ) {
-    final swirlPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.05)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    // Draw a few wavy lines to simulate fog movement
-    for (var i = 0; i < 3; i++) {
-      final swirlRadius = radius * (0.3 + (i * 0.25));
-      final swirlAngle = startAngle + (regionSize * (0.2 + (i * 0.3)));
-
-      final path = Path();
-      for (var j = 0; j < 10; j++) {
-        final t = j / 10.0;
-        final angle = swirlAngle + (t * regionSize * 0.5);
-        final r = swirlRadius + (math.sin(t * math.pi * 2) * 10);
-        final x = center.dx + r * math.cos(angle);
-        final y = center.dy + r * math.sin(angle);
-
-        if (j == 0) {
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-        }
+    for (int i = 0; i < allEras.length; i++) {
+      if (!exploredEras.contains(allEras[i])) {
+        // Draw foggy arc for unexplored era
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius),
+          (i * sectorAngle) - (math.pi / 2),
+          sectorAngle,
+          true,
+          fogPaint,
+        );
       }
-
-      canvas.drawPath(path, swirlPaint);
     }
   }
 
   @override
   bool shouldRepaint(covariant _FogPainter oldDelegate) {
-    return oldDelegate.exploredEras != exploredEras;
+    // Correctly check for content change
+    if (exploredEras.length != oldDelegate.exploredEras.length) return true;
+    for (final era in exploredEras) {
+      if (!oldDelegate.exploredEras.contains(era)) return true;
+    }
+    return false;
   }
 }
