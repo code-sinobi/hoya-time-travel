@@ -162,21 +162,12 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
               loading: () => const Center(
                 child: CircularProgressIndicator(color: MythicColors.bronze),
               ),
-              error: (e, s) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.white24, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      'THE FATES ARE UNCLEAR',
-                      style: GoogleFonts.cinzel(color: Colors.white24),
-                    ),
-                    const Text(
-                      'Connection to the future is unstable.',
-                      style: TextStyle(color: Colors.white10, fontSize: 10),
-                    ),
-                  ],
+              error: (e, s) => const Center(
+                child: Text(
+                  'The fates are unclear. Please try again.',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
                 ),
               ),
             ),

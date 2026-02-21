@@ -252,10 +252,10 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(
+        error: (e, s) => const Center(
           child: Text(
             'Failed to load node. Please try again.',
-            style: const TextStyle(
+            style: TextStyle(
               color: Colors.red,
             ),
           ),
