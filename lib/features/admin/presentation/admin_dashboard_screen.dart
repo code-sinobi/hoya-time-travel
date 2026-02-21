@@ -1,66 +1,90 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/era_theme.dart';
-import '../../../core/widgets/galactic_background.dart';
-import '../../community/domain/domain.dart';
-import 'admin_snippet_controller.dart';
+import '../../story/models/story_models.dart';
+import '../data/admin_repository.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pendingSnippets = ref.watch(adminSnippetControllerProvider);
+    final snippetsAsync = ref.watch(pendingSnippetsProvider);
 
     return Scaffold(
-      backgroundColor: MythicColors.voidBackground,
+      backgroundColor: const Color(0xFF15151A),
       appBar: AppBar(
         title: Text(
-          'NARRATIVE ORCHESTRATOR',
-          style: GoogleFonts.cinzel(color: MythicColors.bronze),
+          'CHRONOS ADMIN',
+          style: GoogleFonts.orbitron(
+            color: MythicColors.bronze,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: MythicColors.bronze),
-          onPressed: () => context.pop(),
-        ),
       ),
-      body: Stack(
-        children: [
-          const GalacticBackground(showStars: false),
-          pendingSnippets.when(
-            data: (snippets) {
-              if (snippets.isEmpty) {
-                return Center(
-                  child: Text(
-                    'The Void is silent.',
-                    style: GoogleFonts.cinzel(
-                      color: MythicColors.stoneGray,
-                      fontSize: 18,
-                    ),
-                  ),
-                );
-              }
-              return ListView.builder(
+      body: snippetsAsync.when(
+        data: (snippets) => snippets.isEmpty
+            ? _buildEmptyState()
+            : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: snippets.length,
-                itemBuilder: (context, index) {
-                  return _SnippetCurationCard(snippet: snippets[index]);
-                },
-              );
-            },
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: MythicColors.bronze),
-            ),
-            error: (err, st) => Center(
-              child: Text(
-                'Error: $err',
-                style: const TextStyle(color: MythicColors.ochreRed),
+                itemBuilder: (context, index) => _SnippetCurationCard(
+                  snippet: snippets[index],
+                ),
               ),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: MythicColors.bronze),
+        ),
+        error: (e, s) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'ADMIN SYSTEM OFFLINE',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                'Check temporal connection.',
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(pendingSnippetsProvider),
+                child: const Text('RETRY'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.auto_awesome,
+            size: 64,
+            color: MythicColors.bronze.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'THE TIMELINE IS STABLE',
+            style: GoogleFonts.cinzel(
+              color: MythicColors.parchment,
+              fontSize: 18,
             ),
+          ),
+          const Text(
+            'No pending snippets for review.',
+            style: TextStyle(color: Colors.white38),
           ),
         ],
       ),
@@ -69,7 +93,7 @@ class AdminDashboardScreen extends ConsumerWidget {
 }
 
 class _SnippetCurationCard extends ConsumerWidget {
-  final Snippet snippet;
+  final CommunitySnippet snippet;
 
   const _SnippetCurationCard({required this.snippet});
 
@@ -77,18 +101,20 @@ class _SnippetCurationCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       color: const Color(0xFF1E1E2C),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.bottom(16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: MythicColors.bronze.withValues(alpha: 0.3)),
+        side: BorderSide(
+          color: MythicColors.bronze.withValues(alpha: 0.2),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User ID + Tags
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
                   padding:
@@ -98,78 +124,86 @@ class _SnippetCurationCard extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    snippet.userId.substring(0, 8).toUpperCase(),
+                    snippet.userId.length >= 8
+                        ? snippet.userId.substring(0, 8).toUpperCase()
+                        : snippet.userId.toUpperCase(),
                     style: GoogleFonts.spaceMono(
                       color: MythicColors.stoneGray,
                       fontSize: 10,
                     ),
                   ),
                 ),
-                const Spacer(),
-                ...snippet.tags.map(
-                  (tag) => Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Chip(
-                      label: Text(
-                        tag.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: MythicColors.bronze,
-                        ),
-                      ),
-                      backgroundColor:
-                          MythicColors.bronze.withValues(alpha: 0.1),
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                Text(
+                  snippet.eraId.toUpperCase(),
+                  style: const TextStyle(
+                    color: MythicColors.bronze,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-
-            // Content
             Text(
               snippet.content,
               style: GoogleFonts.cormorantGaramond(
                 fontSize: 18,
                 color: MythicColors.parchment,
-                fontStyle: FontStyle.italic,
+                height: 1.3,
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Actions
+            const SizedBox(height: 12),
+            Flexible(
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: snippet.tags
+                    .map(
+                      (tag) => Chip(
+                        label: Text(
+                          tag.toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: MythicColors.bronze,
+                          ),
+                        ),
+                        backgroundColor:
+                            MythicColors.bronze.withValues(alpha: 0.1),
+                        padding: EdgeInsets.zero,
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            const Divider(color: Colors.white10, height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton.icon(
-                  icon: const Icon(Icons.close, color: MythicColors.ochreRed),
-                  label: const Text(
-                    'REJECT',
-                    style: TextStyle(
-                      color: MythicColors.ochreRed,
-                    ),
-                  ),
+                OutlinedButton(
                   onPressed: () {
                     ref
-                        .read(adminSnippetControllerProvider.notifier)
-                        .rejectSnippet(snippet.id);
+                        .read(adminRepositoryProvider)
+                        .updateSnippetStatus(snippet.id, 'rejected');
                   },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.redAccent,
+                    side: const BorderSide(color: Colors.redAccent),
+                  ),
+                  child: const Text('REJECT'),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Text('APPROVE'),
+                ElevatedButton(
+                  onPressed: () {
+                    ref
+                        .read(adminRepositoryProvider)
+                        .updateSnippetStatus(snippet.id, 'approved');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: MythicColors.bronze,
                     foregroundColor: Colors.black,
                   ),
-                  onPressed: () {
-                    ref
-                        .read(adminSnippetControllerProvider.notifier)
-                        .approveSnippet(snippet.id);
-                  },
+                  child: const Text('APPROVE'),
                 ),
               ],
             ),

@@ -1,108 +1,79 @@
-import 'dart:math';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/domain.dart';
-
-part 'echo_response_selector.g.dart';
-
-@riverpod
-EchoResponseSelector echoResponseSelector(Ref ref) {
-  return EchoResponseSelector();
-}
+import '../domain/echo_template.dart';
+import '../domain/user_traits.dart';
 
 class EchoResponseSelector {
-  final Random _random = Random();
+  /// Selects the best template based on user traits and recent history
+  EchoTemplate? selectBest(
+    List<EchoTemplate> templates,
+    UserTraits traits,
+    TemporalContext context,
+  ) {
+    if (templates.isEmpty) return null;
 
-  /// Selects the best matching response template based on user context.
-  ///
-  /// Ranking Formula:
-  /// 1. Base Priority: Template's `priority` field.
-  /// 2. Context Match: +5 if specific story/context matches perfectly.
-  /// 3. Echo Match: +1 for each required echo tag the user has.
-  /// 4. Trait Match: +2 if user's dominant trait matches template condition.
-  /// 5. Random Noise: +/- 0.5 to vary identical scores.
-  EchoResponseTemplate? selectBestResponse({
-    required List<EchoResponseTemplate> freshTemplates,
-    required UserContext context,
-    String? preferredContextType,
-  }) {
-    // 1. Filter by context type if specified
-    var candidates = freshTemplates;
-    if (preferredContextType != null) {
-      candidates = candidates
-          .where((t) => t.contextType == preferredContextType)
-          .toList();
-    }
-
-    // 2. Filter by hard requirements (must have all req echoes/traits)
-    candidates =
-        candidates.where((t) => _meetsRequirements(t, context)).toList();
-
-    if (candidates.isEmpty) return null;
-
-    // 3. Score candidates
-    final scored = candidates.map((t) {
-      return MapEntry(t, _calculateScore(t, context));
+    final scoredTemplates = templates.map((template) {
+      double score = calculateScore(template, traits, context);
+      return MapEntry(template, score);
     }).toList();
 
-    // 4. Sort by score descending
-    scored.sort((a, b) => b.value.compareTo(a.value));
+    // Sort by score descending
+    scoredTemplates.sort((a, b) => b.value.compareTo(a.value));
 
-    // 5. Return top match
-    return scored.first.key;
+    // Filter out templates with score < 0 (requirements not met)
+    final eligible = scoredTemplates.where((e) => e.value >= 0).toList();
+
+    return eligible.isNotEmpty ? eligible.first.key : null;
   }
 
-  bool _meetsRequirements(EchoResponseTemplate template, UserContext context) {
-    final conditions = template.triggerConditions;
-    for (final key in conditions.keys) {
-      final value = conditions[key];
+  double calculateScore(
+    EchoTemplate template,
+    UserTraits traits,
+    TemporalContext context,
+  ) {
+    double score = template.baseWeight.toDouble();
 
-      if (key.startsWith('min_trait:')) {
-        final trait = key.split(':')[1];
-        final minVal = int.tryParse(value.toString()) ?? 0;
-        if (context.traits.getTraitValue(trait) < minVal) return false;
-      }
-
-      if (key == 'required_echo') {
-        final reqs = value.toString().split(',');
-        for (final req in reqs) {
-          if (!context.echoes.contains(req.trim())) return false;
-        }
+    // 1. Requirement Checks (Must pass or score becomes negative)
+    final requirements = template.triggerConditions['requirements'] as Map<String, dynamic>?;
+    if (requirements != null) {
+      for (var entry in requirements.entries) {
+        final traitValue = traits.getTraitValue(entry.key);
+        final required = entry.value as int;
+        if (traitValue < required) return -1.0; // Requirement not met
       }
     }
 
-    return true;
-  }
-
-  double _calculateScore(EchoResponseTemplate template, UserContext context) {
-    double score = template.priority.toDouble();
-
-    if (template.triggerConditions.containsKey('dominant_trait')) {
-      if (template.triggerConditions['dominant_trait'] ==
-          context.traits.dominantTrait) {
-        score += 2.0;
-      }
+    // 2. Trait Affinities (Linear boost)
+    for (var affinity in template.traitAffinities.entries) {
+      final userVal = traits.getTraitValue(affinity.key);
+      // Boost proportional to trait strength
+      score += (userVal / 100.0) * affinity.value;
     }
 
-    if (template.triggerConditions['recent_story_id'] == context.lastStoryId) {
+    // 3. Contextual Boosts
+    // Era match
+    if (template.eraId == context.currentEra) {
+      score += 10.0;
+    }
+
+    // Boost for recent activity relevance (guard against both being null)
+    final recentStoryId = template.triggerConditions['recent_story_id'];
+    if (recentStoryId != null &&
+        context.lastStoryId != null &&
+        recentStoryId == context.lastStoryId) {
       score += 5.0;
     }
-
-    score += _random.nextDouble();
 
     return score;
   }
 }
 
-/// Helper class to pass context efficiently
-class UserContext {
-  final UserTraits traits;
-  final List<String> echoes;
+class TemporalContext {
+  final String currentEra;
   final String? lastStoryId;
+  final Set<String> activeTraits;
 
-  UserContext({
-    required this.traits,
-    required this.echoes,
+  TemporalContext({
+    required this.currentEra,
     this.lastStoryId,
+    required this.activeTraits,
   });
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hoya_app/core/theme/era_theme.dart';
-import 'package:hoya_app/features/auth/services/profile_service.dart';
+import '../../../core/theme/era_theme.dart';
+import '../data/chronicler_repository.dart';
 
 class ChroniclerOnboardingScreen extends ConsumerStatefulWidget {
   const ChroniclerOnboardingScreen({super.key});
@@ -19,25 +19,18 @@ class _ChroniclerOnboardingScreenState
   bool _isLoading = false;
 
   Future<void> _becomeChronicler() async {
+    if (!_acceptedTerms) return;
+
     setState(() => _isLoading = true);
     try {
-      await ref.read(userProfileProvider.notifier).becomeChronicler();
+      await ref.read(chroniclerRepositoryProvider).becomeChronicler();
       if (mounted) {
-        context.pop(); // Return to previous screen, now with chronicler powers
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Welcome, Chronicler. The Quill is yours.',
-              style: GoogleFonts.cinzel(color: MythicColors.parchment),
-            ),
-            backgroundColor: MythicColors.voidBackground,
-          ),
-        );
+        context.go('/chronicler');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to join: $e')),
+          const SnackBar(content: Text('Failed to join chroniclers. Please try again.')),
         );
       }
     } finally {
@@ -48,123 +41,118 @@ class _ChroniclerOnboardingScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MythicColors.voidBackground,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text('The Chronicler\'s Path', style: GoogleFonts.cinzel()),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Center(
-              child: Icon(
-                Icons.auto_stories,
-                size: 64,
-                color: MythicColors.bronze,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Weave the Threads of Time',
-              style: GoogleFonts.cinzel(
-                fontSize: 24,
-                color: MythicColors.parchment,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'As a Chronicler, you are granted the power to create Living Stories. Your words will become worlds for others to explore.',
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                color: Colors.white70,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: MythicColors.bronze.withValues(alpha: 0.3),
+      backgroundColor: const Color(0xFF15151A),
+      body: Stack(
+        children: [
+          // Background Aesthetic
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/parchment_texture.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.black26,
               ),
+            ),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 40),
                   Text(
-                    'THE WRITER\'S CODE',
-                    style: GoogleFonts.cinzel(
-                      color: MythicColors.bronze,
+                    'WEAVE THE\nTIMELINE',
+                    style: GoogleFonts.cinzelDecorative(
+                      fontSize: 40,
                       fontWeight: FontWeight.bold,
+                      color: MythicColors.parchment,
+                      height: 1.1,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildRule('1. I will write with respect for all cultures.'),
-                  _buildRule('2. I will not create hate speech or harm.'),
-                  _buildRule('3. I create original worlds, not copies.'),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Row(
-              children: [
-                Checkbox(
-                  value: _acceptedTerms,
-                  activeColor: MythicColors.bronze,
-                  onChanged: (val) => setState(() => _acceptedTerms = val!),
-                ),
-                Expanded(
-                  child: Text(
-                    'I accept the Writer\'s Code',
-                    style: GoogleFonts.lato(color: Colors.white70),
+                  const SizedBox(height: 24),
+                  Container(
+                    width: 60,
+                    height: 4,
+                    color: MythicColors.bronze,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: MythicColors.bronze,
-                  disabledBackgroundColor: Colors.grey.shade800,
-                ),
-                onPressed:
-                    (_acceptedTerms && !_isLoading) ? _becomeChronicler : null,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : Text(
-                        'ACCEPT THE QUILL',
-                        style: GoogleFonts.cinzel(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                  const SizedBox(height: 32),
+                  Text(
+                    'Chroniclers are the architects of history. By joining, you gain the power to create stories, branch paths, and decide the fate of entire eras.',
+                    style: GoogleFonts.cormorantGaramond(
+                      fontSize: 20,
+                      color: MythicColors.parchment.withValues(alpha: 0.8),
+                      height: 1.4,
+                    ),
+                  ),
+                  const Spacer(),
+
+                  // Terms Box
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: MythicColors.bronze.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Checkbox(
+                          value: _acceptedTerms,
+                          activeColor: MythicColors.bronze,
+                          onChanged: (val) =>
+                              setState(() => _acceptedTerms = val ?? false),
+                        ),
+                        Expanded(
+                          child: Text(
+                            'I agree to the Chronos Code of Truth and Creative Quality.',
+                            style: GoogleFonts.shareTechMono(
+                              fontSize: 12,
+                              color: MythicColors.stoneGray,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: (_acceptedTerms && !_isLoading)
+                          ? _becomeChronicler
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MythicColors.bronze,
+                        foregroundColor: Colors.black,
+                        disabledBackgroundColor: Colors.white12,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.black)
+                          : Text(
+                              'ASCEND TO CHRONICLER',
+                              style: GoogleFonts.orbitron(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRule(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('\u2022 ', style: TextStyle(color: MythicColors.bronze)),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.lato(color: Colors.white60),
             ),
           ),
         ],

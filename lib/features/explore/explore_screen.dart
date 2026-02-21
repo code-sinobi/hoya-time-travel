@@ -1,16 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../core/theme/era_theme.dart';
-import '../rifts/domain/anomaly.dart';
 import '../rifts/presentation/anomaly_provider.dart';
-import 'domain/era.dart';
 import 'widgets/temporal_radar.dart';
-import 'widgets/anomaly_blip.dart';
+import 'widgets/fog_overlay.dart';
 import 'widgets/futures_tab.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -21,14 +16,8 @@ class ExploreScreen extends ConsumerStatefulWidget {
 }
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  Era _selectedEra = Era.mythic;
-  final Set<Era> _exploredEras = {
-    Era.mythic,
-    Era.ancient,
-    Era.medieval,
-  }; // Mock explored eras
 
   @override
   void initState() {
@@ -45,29 +34,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF15151A),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: SafeArea(
-          child: Container(
-            color: Colors.black26,
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: MythicColors.bronze,
-              labelColor: MythicColors.bronze,
-              unselectedLabelColor: Colors.white38,
-              labelStyle: GoogleFonts.cinzel(fontWeight: FontWeight.bold),
-              tabs: const [
-                Tab(text: 'RADAR'),
-                Tab(text: 'FUTURES'),
-              ],
-            ),
+      backgroundColor: const Color(0xFF0F0F13),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'TEMPORAL EXPLORER',
+          style: GoogleFonts.orbitron(
+            fontSize: 16,
+            color: MythicColors.parchment,
+            letterSpacing: 2,
           ),
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: MythicColors.bronze,
+          labelColor: MythicColors.bronze,
+          unselectedLabelColor: Colors.white24,
+          labelStyle: GoogleFonts.shareTechMono(fontWeight: FontWeight.bold),
+          tabs: const [
+            Tab(text: 'RADAR', icon: Icon(Icons.radar)),
+            Tab(text: 'FUTURES', icon: Icon(Icons.auto_awesome_mosaic)),
+          ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        physics: const NeverScrollableScrollPhysics(),
         children: [
           _buildRadarTab(),
           const FuturesTab(),
@@ -77,192 +69,123 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildRadarTab() {
-    // Watch anomalies stream
     final anomaliesAsync = ref.watch(anomaliesStreamProvider);
 
-    return Stack(
-      children: [
-        // Background - subtle grid or stars
-        Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.center,
-              radius: 1.5,
-              colors: [
-                Color(0xFF1A1A2E),
-                Color(0xFF0A0A0F),
-              ],
-            ),
-          ),
-        ),
-
-        // Radar Content
-        Center(
-          child: anomaliesAsync.when(
-            data: (anomalies) {
-              final blips = _mapAnomaliesToBlips(anomalies);
-              return TemporalRadar(
-                anomalies: blips,
-                currentEra: _selectedEra,
-                exploredEras: _exploredEras,
-                onEraSelected: (era) => setState(() => _selectedEra = era),
-                onAnomalyTapped: _handleAnomalyTap,
-                onScanComplete: () {
-                  // Optional: Trigger haptic or sound
+    return anomaliesAsync.when(
+      data: (anomalies) {
+        final blips = _mapAnomaliesToBlips(anomalies);
+        return Stack(
+          children: [
+            Center(
+              child: TemporalRadar(
+                blips: blips,
+                onBlipTap: (anomalyId) {
+                  // Navigate to anomaly
                 },
-              );
-            },
-            loading: () =>
-                const CircularProgressIndicator(color: Color(0xFF00FFFF)),
-            error: (e, s) => Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.signal_wifi_off, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  'RADAR OFFLINE',
-                  style: GoogleFonts.orbitron(color: Colors.red),
-                ),
-                Text(
-                  'Error: $e',
-                  style: const TextStyle(color: Colors.white54, fontSize: 10),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Hint Text
-        Positioned(
-          bottom: 32,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Text(
-              'DIVINING TIMELINE...',
-              style: GoogleFonts.shareTechMono(
-                color: const Color(0xFF00FFFF).withValues(alpha: 0.5),
-                letterSpacing: 2,
               ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).fadeIn(),
+            ),
+            const FogOverlay(
+              exploredEras: {'MYTHIC', 'ANCIENT', 'MODERN'},
+            ),
+            _buildLegend(),
+          ],
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: MythicColors.bronze),
+      ),
+      error: (e, s) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.signal_wifi_off, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          Text(
+            'RADAR OFFLINE',
+            style: GoogleFonts.orbitron(color: Colors.red),
           ),
-        ),
-      ],
+          const Text(
+            'Unable to connect to the temporal network.',
+            style: TextStyle(color: Colors.white54, fontSize: 10),
+          ),
+        ],
+      ),
     );
   }
 
-  List<AnomalyBlipData> _mapAnomaliesToBlips(List<Anomaly> anomalies) {
-    // Helper to distribute blips randomly but deterministically based on ID
-    return anomalies.map((anomaly) {
-      final seed = anomaly.id.codeUnits.fold(0, (p, c) => p + c);
-      final random = math.Random(seed);
+  List<RadarBlip> _mapAnomaliesToBlips(List<dynamic> anomalies) {
+    // Deterministic but randomized layout for blips
+    return anomalies.asMap().entries.map((entry) {
+      final index = entry.key;
+      final anomaly = entry.value;
 
-      // Use parsed era from domain model
-      final era = anomaly.parsedEra;
+      final baseAngle = (index * 137.5) * (math.pi / 180);
+      final variance = math.Random(anomaly.id.hashCode).nextDouble() * 0.5;
+      final angle = ((baseAngle + variance) % (math.pi * 2) + (math.pi * 2)) %
+          (math.pi * 2);
 
-      // Angle roughly within the era's region (+/- 30 degrees)
-      final baseAngle = era.radarAngle;
-      final variance = (random.nextDouble() - 0.5) * (math.pi / 3);
-      final angle = (baseAngle + variance) % (2 * math.pi); // Normalize
+      final distance = 0.3 + (math.Random(index).nextDouble() * 0.5);
 
-      // Distance between 0.4 and 0.9 of radius
-      final distance = 0.4 + (random.nextDouble() * 0.5);
-
-      return AnomalyBlipData(
+      return RadarBlip(
         id: anomaly.id,
-        era: era,
         angle: angle,
         distance: distance,
-        severity: anomaly.severity,
-        title: anomaly.title,
+        intensity: anomaly.urgency / 10.0,
+        color: _getColorForEra(anomaly.eraId),
       );
     }).toList();
   }
 
-  void _handleAnomalyTap(AnomalyBlipData blip) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+  Color _getColorForEra(String era) {
+    switch (era.toUpperCase()) {
+      case 'MYTHIC':
+        return const Color(0xFFFFD700);
+      case 'ANCIENT':
+        return MythicColors.bronze;
+      case 'MODERN':
+        return const Color(0xFF00CED1);
+      default:
+        return Colors.white;
+    }
+  }
+
+  Widget _buildLegend() {
+    return Positioned(
+      bottom: 24,
+      left: 20,
+      right: 20,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A24),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(
-            top: BorderSide(
-              color: blip.severity == AnomalySeverity.critical
-                  ? Colors.red
-                  : const Color(0xFF00FFFF),
-              width: 2,
-            ),
-          ),
-          boxShadow: const [BoxShadow(color: Colors.black54, blurRadius: 20)],
+          color: Colors.black45,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.warning_amber,
-                  color: blip.severity == AnomalySeverity.critical
-                      ? Colors.red
-                      : Colors.amber,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'ANOMALY DETECTED',
-                  style: GoogleFonts.orbitron(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              blip.title.toUpperCase(),
-              style: GoogleFonts.cinzelDecorative(
-                fontSize: 24,
-                color: MythicColors.parchment,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'ERA: ${blip.era.label}',
-              style: GoogleFonts.spaceMono(
-                color: const Color(0xFF00FFFF),
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xFF00FFFF).withValues(alpha: 0.2),
-                  foregroundColor: const Color(0xFF00FFFF),
-                  side: const BorderSide(color: Color(0xFF00FFFF)),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  context.go('/rifts'); // Navigate to dashboard
-                },
-                child: Text(
-                  'ANALYZE IN DASHBOARD',
-                  style: GoogleFonts.orbitron(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
+            _legendItem('MYTHIC', const Color(0xFFFFD700)),
+            _legendItem('ANCIENT', MythicColors.bronze),
+            _legendItem('MODERN', const Color(0xFF00CED1)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _legendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.shareTechMono(color: Colors.white70, fontSize: 10),
+        ),
+      ],
     );
   }
 }

@@ -3,89 +3,72 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/era_theme.dart';
-import '../../../core/widgets/galactic_background.dart';
 import '../../story/models/story_models.dart';
-import 'chronicler_controller.dart';
+import '../data/chronicler_repository.dart';
 
 class ChroniclerDashboardScreen extends ConsumerWidget {
   const ChroniclerDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final myStoriesAsync = ref.watch(chroniclerControllerProvider);
+    final myStoriesAsync = ref.watch(myStoriesProvider);
 
     return Scaffold(
-      backgroundColor: MythicColors.voidBackground,
+      backgroundColor: const Color(0xFF15151A),
       appBar: AppBar(
         title: Text(
-          'CHRONICLER\'S DESK',
-          style: GoogleFonts.cinzel(color: MythicColors.bronze),
+          'CHRONICLER CELL',
+          style: GoogleFonts.cinzel(color: MythicColors.parchment),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: MythicColors.bronze),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: Stack(
-        children: [
-          const GalacticBackground(showStars: false),
-          myStoriesAsync.when(
-            data: (stories) {
-              if (stories.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.edit_note,
-                        size: 60,
-                        color: MythicColors.stoneGray,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'The page is blank.',
-                        style: GoogleFonts.cinzel(
-                          color: MythicColors.stoneGray,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Begin your first chronicle.',
-                        style: GoogleFonts.exo2(color: Colors.white54),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: stories.length,
-                itemBuilder: (context, index) {
-                  return _StoryDraftCard(story: stories[index]);
-                },
-              );
-            },
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: MythicColors.bronze),
-            ),
-            error: (err, st) => Center(
-              child: Text(
-                'Error: $err',
-                style: const TextStyle(color: MythicColors.ochreRed),
-              ),
-            ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: MythicColors.bronze),
+            onPressed: () => _showCreateDialog(context, ref),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: MythicColors.bronze,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.history_edu),
-        label: const Text('NEW STORY'),
-        onPressed: () => _showCreateDialog(context, ref),
+      body: myStoriesAsync.when(
+        data: (stories) => stories.isEmpty
+            ? _buildEmptyState(context, ref)
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: stories.length,
+                itemBuilder: (context, index) => _StoryDraftCard(
+                  story: stories[index],
+                ),
+              ),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: MythicColors.bronze),
+        ),
+        error: (e, s) => Center(
+          child: Text(
+            'Failed to load your threads. Please try again.',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.history_edu, size: 64, color: Colors.white12),
+          const SizedBox(height: 16),
+          Text(
+            'NO THREADS WOVEN YET',
+            style: GoogleFonts.orbitron(color: Colors.white38),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => _showCreateDialog(context, ref),
+            child: const Text('START NEW STORY'),
+          ),
+        ],
       ),
     );
   }
@@ -93,89 +76,69 @@ class ChroniclerDashboardScreen extends ConsumerWidget {
   void _showCreateDialog(BuildContext context, WidgetRef ref) {
     final titleController = TextEditingController();
     String selectedEra = 'MYTHIC';
-    // Simplified dialog for MVP
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2C),
-        title: Text(
-          'New Chronicle',
-          style: GoogleFonts.cinzel(
-            color: MythicColors.parchment,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E2C),
+          title: Text(
+            'NEW TIMELINE THREAD',
+            style: GoogleFonts.cinzel(color: MythicColors.bronze, fontSize: 18),
           ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(
-                    color: Colors.white30,
-                  ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Story Title',
+                  labelStyle: TextStyle(color: Colors.white54),
                 ),
               ),
-              style: const TextStyle(color: Colors.white),
+              const SizedBox(height: 16),
+              DropdownButton<String>(
+                value: selectedEra,
+                dropdownColor: const Color(0xFF2A2A35),
+                isExpanded: true,
+                items: ['MYTHIC', 'ANCIENT', 'MODERN']
+                    .map((e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(e, style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (val) => setDialogState(() => selectedEra = val!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL', style: TextStyle(color: Colors.white38)),
             ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              initialValue: selectedEra,
-              dropdownColor: const Color(0xFF2A2A35),
-              items: [
-                'MYTHIC',
-                'ANCIENT',
-                'MEDIEVAL',
-                'INDUSTRIAL',
-                'MODERN',
-                'FUTURE',
-              ]
-                  .map(
-                    (e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(
-                        e,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (v) => selectedEra = v!,
-              decoration: const InputDecoration(
-                labelText: 'Era',
-                labelStyle: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
+            ElevatedButton(
+              onPressed: () async {
+                final repo = ref.read(chroniclerRepositoryProvider);
+                try {
+                  final story = await repo.createStory(
+                    title: titleController.text,
+                    eraId: selectedEra,
+                  );
+                  if (context.mounted) {
+                    Navigator.pop(ctx);
+                    context.push('/chronicler/story/${story.id}');
+                  }
+                } catch (e) {
+                  // error handled by snackbar usually
+                }
+              },
+              child: const Text('CREATE'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
-          ),
-          ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(backgroundColor: MythicColors.bronze),
-            onPressed: () {
-              ref.read(chroniclerControllerProvider.notifier).createStory(
-                    title: titleController.text,
-                    eraId: selectedEra,
-                    culture: 'Unknown', // Default for now
-                    theme: 'Adventure', // Default
-                  );
-              Navigator.pop(context);
-            },
-            child: const Text('CREATE', style: TextStyle(color: Colors.black)),
-          ),
-        ],
       ),
-    );
+    ).then((_) => titleController.dispose());
   }
 }
 
@@ -187,25 +150,22 @@ class _StoryDraftCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: const Color(0xFF1E1E2C),
-      margin: const EdgeInsets.only(bottom: 16),
+      color: Colors.white.withValues(alpha: 0.05),
+      margin: const EdgeInsets.bottom(12),
       child: ListTile(
+        onTap: () => context.push('/chronicler/story/${story.id}'),
         title: Text(
           story.title,
           style: GoogleFonts.cinzel(
             color: MythicColors.parchment,
+            fontWeight: FontWeight.bold,
           ),
         ),
         subtitle: Text(
-          '${story.eraId} \u2022 ${story.isPublished ? "PUBLISHED" : "DRAFT"}',
+          '${story.eraId} • ${story.isPublished ? "PUBLISHED" : "DRAFT"}',
+          style: const TextStyle(color: Colors.white54),
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-        onTap: () {
-          // Navigate to editor
-          context.push(
-            '/chronicler/story/${story.id}?title=${Uri.encodeComponent(story.title)}',
-          );
-        },
+        trailing: const Icon(Icons.chevron_right, color: MythicColors.bronze),
       ),
     );
   }
