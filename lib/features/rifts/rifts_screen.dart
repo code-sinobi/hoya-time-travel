@@ -167,12 +167,6 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
       return _buildEmptyState();
     }
 
-    // Build a map of cascade connections for visualization
-    final cascadeMap = <String, int>{};
-    for (final anomaly in anomalies) {
-      cascadeMap[anomaly.id] = anomaly.cascadeAnomalyIds.length;
-    }
-
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       itemCount: anomalies.length,
@@ -219,13 +213,13 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
             .animate()
             .fadeIn(
               duration: 400.ms,
-              delay: Duration(milliseconds: index * 100),
+              delay: Duration(milliseconds: (index.clamp(0, 10)) * 100),
             )
             .slideX(
               begin: 0.1,
               end: 0,
               duration: 400.ms,
-              delay: Duration(milliseconds: index * 100),
+              delay: Duration(milliseconds: (index.clamp(0, 10)) * 100),
               curve: Curves.easeOutCubic,
             );
       },
@@ -268,16 +262,16 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Unable to scan anomalies',
+              'SCAN ERROR',
               style: GoogleFonts.orbitron(
                 color: Colors.white70,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              error.toString(),
-              style: GoogleFonts.exo2(
+            const Text(
+              'The temporal network is unreachable.',
+              style: TextStyle(
                 color: MythicColors.stoneGray,
                 fontSize: 12,
               ),
@@ -361,7 +355,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
             if (anomaly.cascadeAnomalyIds.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                '\u26a0\ufe0f This will destabilize ${anomaly.cascadeAnomalyIds.length} connected timeline(s)',
+                '⚠️ This will destabilize ${anomaly.cascadeAnomalyIds.length} connected timeline(s)',
                 style: GoogleFonts.exo2(
                   color: Colors.amber,
                   fontSize: 11,
@@ -383,11 +377,31 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
               backgroundColor: MythicColors.ochreRed.withValues(alpha: 0.3),
               foregroundColor: MythicColors.ochreRed,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ref
-                  .read(anomalyControllerProvider.notifier)
-                  .purgeAnomaly(anomaly.id);
+              try {
+                await ref
+                    .read(anomalyControllerProvider.notifier)
+                    .purgeAnomaly(anomaly.id);
+                
+                if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Anomaly ${anomaly.title} purged.'),
+                      backgroundColor: MythicColors.ochreRed,
+                    ),
+                  );
+                }
+              } catch (e) {
+                 if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Purge failed. Insufficient energy?'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               'PURGE',
@@ -457,7 +471,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
             if (cascadeCount > 0) ...[
               const SizedBox(height: 8),
               Text(
-                '\u26a0\ufe0f This will destabilize $cascadeCount connected timeline(s)',
+                '⚠️ This will destabilize $cascadeCount connected timeline(s)',
                 style: GoogleFonts.exo2(
                   color: Colors.amber,
                   fontSize: 11,
@@ -479,13 +493,32 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
               backgroundColor: MythicColors.ochreRed.withValues(alpha: 0.3),
               foregroundColor: MythicColors.ochreRed,
             ),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ref
-                  .read(anomalyControllerProvider.notifier)
-                  .purgeAnomalies(_selectedAnomalies.toList());
+              try {
+                await ref
+                    .read(anomalyControllerProvider.notifier)
+                    .purgeAnomalies(_selectedAnomalies.toList());
 
-              _toggleSelectionMode(); // Exit mode after purge
+                if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${_selectedAnomalies.length} anomalies purged.'),
+                      backgroundColor: MythicColors.ochreRed,
+                    ),
+                  );
+                }
+                _toggleSelectionMode(); // Exit mode after purge
+              } catch (e) {
+                 if (context.mounted) {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Bulk purge failed.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               'PURGE ALL',

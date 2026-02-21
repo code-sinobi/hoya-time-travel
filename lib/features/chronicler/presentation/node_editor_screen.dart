@@ -96,7 +96,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving: $e'),
+            content: Text('Error saving node. Please check your data.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -143,7 +143,12 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
       ),
       body: nodeAsync.when(
         data: (node) {
-          if (!_isDirty && node != null) _initializeData(node);
+          // Initialize data from loaded node (only if not dirty)
+          if (!_isDirty && node != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_isDirty) _initializeData(node);
+            });
+          }
 
           return Form(
             key: _formKey,
@@ -249,7 +254,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(
           child: Text(
-            'Error: $e',
+            'Failed to load node. Please try again.',
             style: const TextStyle(
               color: Colors.red,
             ),
@@ -338,6 +343,8 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                 _isDirty = true;
               });
               Navigator.pop(ctx);
+              textCtrl.dispose();
+              targetCtrl.dispose();
             },
           ),
         ],

@@ -94,23 +94,39 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
                             _revealedCards.add(premise.id);
                           });
                         },
-                        onVote: (premise) {
-                          ref
-                              .read(premiseControllerProvider.notifier)
-                              .castVote(premise.id);
-                          // We immediately reveal the voted card if not already
+                        onVote: (premise) async {
+                          // Reveal first
                           setState(() {
                             _revealedCards.add(premise.id);
                           });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Vote cast for ${premise.title}',
-                                style: GoogleFonts.exo2(),
-                              ),
-                              backgroundColor: MythicColors.bronze,
-                            ),
-                          );
+                          
+                          // Then vote and confirm
+                          try {
+                            await ref
+                                .read(premiseControllerProvider.notifier)
+                                .castVote(premise.id);
+                            
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Vote cast for ${premise.title}',
+                                    style: GoogleFonts.exo2(),
+                                  ),
+                                  backgroundColor: MythicColors.bronze,
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                             if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to cast vote. Try again.'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
                         },
                       ),
 
@@ -147,11 +163,20 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
                 child: CircularProgressIndicator(color: MythicColors.bronze),
               ),
               error: (e, s) => Center(
-                child: Text(
-                  'Fate is unclear: $e',
-                  style: const TextStyle(
-                    color: Colors.red,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.white24, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'THE FATES ARE UNCLEAR',
+                      style: GoogleFonts.cinzel(color: Colors.white24),
+                    ),
+                    const Text(
+                      'Connection to the future is unstable.',
+                      style: TextStyle(color: Colors.white10, fontSize: 10),
+                    ),
+                  ],
                 ),
               ),
             ),
