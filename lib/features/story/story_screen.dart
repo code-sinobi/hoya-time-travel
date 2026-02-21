@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'models/story_models.dart';
-import 'services/story_service.dart';
+import '../living_story/presentation/living_story_controller.dart';
+
 import 'widgets/story_view.dart';
+import 'widgets/resource_header.dart';
 import '../../core/theme/era_theme.dart';
 
 class StoryScreen extends ConsumerStatefulWidget {
@@ -14,46 +16,15 @@ class StoryScreen extends ConsumerStatefulWidget {
 }
 
 class _StoryScreenState extends ConsumerState<StoryScreen> {
-  StoryNode? _currentNode;
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
-    _loadInitialNode();
-  }
-
-  Future<void> _loadInitialNode() async {
-    final node = await ref
-        .read(storyServiceProvider.notifier)
-        .loadNode(widget.storyId, 'start');
-
-    if (mounted) {
-      setState(() {
-        _currentNode = node;
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _handleChoice(StoryChoice choice) async {
-    if (choice.nextNodeId == null) {
-      // Handle dynamic/error case or just return
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    final nextNode = await ref
-        .read(storyServiceProvider.notifier)
-        .loadNode(widget.storyId, choice.nextNodeId!);
-
-    if (mounted) {
-      setState(() {
-        _currentNode = nextNode;
-        _isLoading = false;
-      });
-    }
+    // Trigger loading session when screen mounts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(livingStoryControllerProvider.notifier)
+          .loadSession(widget.storyId);
+    });
   }
 
   @override
@@ -61,25 +32,69 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     final theme = Theme.of(context).extension<EraTheme>();
     if (theme == null) return const SizedBox();
 
+    // Watch the living story state
+    final storyState = ref.watch(livingStoryControllerProvider);
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          'The Lost Scroll',
+          storyState.session?.storyId ?? 'Story',
           style: theme.headlineStyle.copyWith(fontSize: 20),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: theme.backgroundColor.withValues(alpha: 0.8),
         elevation: 0,
         leading: BackButton(color: theme.primaryColor),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(60),
+          child: ResourceHeader(),
+        ),
       ),
-      extendBodyBehindAppBar: true,
-      body: _isLoading
-          ? _buildLoadingState(theme)
-          : _currentNode != null
-          ? StoryView(node: _currentNode!, onChoiceSelected: _handleChoice)
-          : Center(
-              child: Text('Error retrieving story', style: theme.bodyStyle),
-            ),
+      body: _buildBody(context, ref, theme, storyState),
     );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    EraTheme theme,
+    LivingStoryState state,
+  ) {
+    if (state.isLoading) {
+      return _buildLoadingState(theme);
+    }
+
+    if (state.error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Error: ${state.error}',
+              style: theme.bodyStyle.copyWith(
+                color: Colors.red,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref
+                  .read(livingStoryControllerProvider.notifier)
+                  .loadSession(widget.storyId),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state.currentNode != null) {
+      return StoryView(
+        node: state.currentNode!,
+        onChoiceSelected: (choice) => _handleChoice(ref, choice),
+      );
+    }
+
+    return const Center(child: Text('No content available'));
   }
 
   Widget _buildLoadingState(EraTheme theme) {
@@ -96,5 +111,9 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
         ],
       ),
     );
+  }
+
+  void _handleChoice(WidgetRef ref, StoryChoice choice) {
+    ref.read(livingStoryControllerProvider.notifier).makeChoice(choice);
   }
 }
