@@ -167,12 +167,15 @@ class ChroniclerDashboardScreen extends ConsumerWidget {
             onPressed: () {
               final title = titleController.text.trim();
               if (title.isEmpty) return;
-              ref.read(chroniclerControllerProvider.notifier).createStory(
+              ref
+                  .read(chroniclerControllerProvider.notifier)
+                  .createStory(
                     title: title,
                     eraId: selectedEra,
                     culture: 'Unknown', // Default for now
                     theme: 'Adventure', // Default
-                  ).then((_) {
+                  )
+                  .then((_) {
                 if (context.mounted) context.pop();
               }).catchError((e) {
                 if (context.mounted) {

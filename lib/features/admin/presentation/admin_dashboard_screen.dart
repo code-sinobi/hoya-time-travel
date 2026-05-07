@@ -164,7 +164,8 @@ class _SnippetCurationCardState extends ConsumerState<_SnippetCurationCard> {
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: MythicColors.bronze),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: MythicColors.bronze),
                     ),
                   )
                 else ...[
