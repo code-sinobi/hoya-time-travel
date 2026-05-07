@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'app_exceptions.dart';
+
 import '../utils/logger.dart';
+import 'app_exceptions.dart';
 
 part 'error_handler.g.dart';
 
@@ -11,7 +12,7 @@ part 'error_handler.g.dart';
 /// ```dart
 /// try {
 ///   await someOperation();
-/// } catch (e) {
+/// } on Object catch (e) {
 ///   ref.read(errorHandlerProvider).handle(
 ///     AuthException('Entry failed', e),
 ///     context: context,
@@ -62,7 +63,6 @@ class ErrorHandler extends _$ErrorHandler {
         content: Text(_getUserFriendlyMessage(exception)),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
       ),
     );
   }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import '../../../core/theme/era_theme.dart';
 import '../../community/presentation/premise_controller.dart';
 import 'fate_card_carousel.dart';
@@ -22,7 +23,7 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
   Widget build(BuildContext context) {
     final premisesAsync = ref.watch(premiseControllerProvider);
 
-    return Container(
+    return ColoredBox(
       color: const Color(0xFF15151A),
       child: Column(
         children: [
@@ -80,6 +81,12 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
                 final totalVotes =
                     premises.fold(0, (sum, p) => sum + p.voteCount);
 
+                // Check if user has voted (mock logic: check if any premise is 'voted' in local state or model)
+                // For now, assume no persistence of 'voted state' in model other than count,
+                // but usually we'd check UserInteraction.
+                // We'll track a local 'votedId' for session, or verify against something else if available.
+                // Since Premise model doesn't have "hasVoted", we'll rely on local state or assume not voted.
+
                 return SingleChildScrollView(
                   child: Column(
                     children: [
@@ -94,39 +101,23 @@ class _FuturesTabState extends ConsumerState<FuturesTab> {
                             _revealedCards.add(premise.id);
                           });
                         },
-                        onVote: (premise) async {
-                          // Reveal first
+                        onVote: (premise) {
+                          ref
+                              .read(premiseControllerProvider.notifier)
+                              .castVote(premise.id);
+                          // We immediately reveal the voted card if not already
                           setState(() {
                             _revealedCards.add(premise.id);
                           });
-                          
-                          // Then vote and confirm
-                          try {
-                            await ref
-                                .read(premiseControllerProvider.notifier)
-                                .castVote(premise.id);
-                            
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Vote cast for ${premise.title}',
-                                    style: GoogleFonts.exo2(),
-                                  ),
-                                  backgroundColor: MythicColors.bronze,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Failed to cast vote. Try again.'),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
-                            }
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Vote cast for ${premise.title}',
+                                style: GoogleFonts.exo2(),
+                              ),
+                              backgroundColor: MythicColors.bronze,
+                            ),
+                          );
                         },
                       ),
 

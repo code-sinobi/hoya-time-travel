@@ -4,16 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../story/data/story_library.dart';
 
 class RelicSlabCard extends StatefulWidget {
+  const RelicSlabCard({
+    required this.story,
+    required this.onEnter,
+    super.key,
+    this.isLocked = false,
+  });
   final StoryMetadata story;
   final VoidCallback onEnter;
   final bool isLocked;
-
-  const RelicSlabCard({
-    super.key,
-    required this.story,
-    required this.onEnter,
-    this.isLocked = false,
-  });
 
   @override
   State<RelicSlabCard> createState() => _RelicSlabCardState();
@@ -47,7 +46,7 @@ class _RelicSlabCardState extends State<RelicSlabCard>
 
     return GestureDetector(
       onTap: widget.isLocked
-          ? () => HapticFeedback.heavyImpact()
+          ? HapticFeedback.heavyImpact
           : () {
               HapticFeedback.lightImpact();
               widget.onEnter();
@@ -109,7 +108,6 @@ class _RelicSlabCardState extends State<RelicSlabCard>
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         // Myth Age Header
                         Container(
@@ -143,9 +141,8 @@ class _RelicSlabCardState extends State<RelicSlabCard>
                           textAlign: TextAlign.center,
                           style: GoogleFonts.cinzel(
                             fontSize: 28,
-                            color: widget.isLocked
-                                ? Colors.white38
-                                : Colors.white,
+                            color:
+                                widget.isLocked ? Colors.white38 : Colors.white,
                             letterSpacing: 1.5,
                             shadows: widget.isLocked
                                 ? []
@@ -197,8 +194,8 @@ class _RelicSlabCardState extends State<RelicSlabCard>
 }
 
 class ForcefieldPainter extends CustomPainter {
-  final double progress;
   ForcefieldPainter({required this.progress});
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../theme/galactic_colors.dart';
 
 class TemporalHUD extends StatelessWidget {
-  final int level;
-  final int xp;
-  final int temporalEnergy;
-
   const TemporalHUD({
-    super.key,
     required this.level,
     required this.xp,
     required this.temporalEnergy,
+    super.key,
   });
+  final int level;
+  final int xp;
+  final int temporalEnergy;
 
   @override
   Widget build(BuildContext context) {

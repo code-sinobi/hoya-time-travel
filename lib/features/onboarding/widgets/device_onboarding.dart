@@ -1,19 +1,20 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+
 import '../../../core/widgets/galactic_background.dart';
 import '../data/onboarding_content.dart';
 
 class DeviceOnboarding extends StatefulWidget {
-  final List<OnboardingPageData> pages;
-  final VoidCallback onComplete;
-
   const DeviceOnboarding({
-    super.key,
     required this.pages,
     required this.onComplete,
+    super.key,
   });
+  final List<OnboardingPageData> pages;
+  final VoidCallback onComplete;
 
   @override
   State<DeviceOnboarding> createState() => _DeviceOnboardingState();
@@ -80,7 +81,7 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
           body: Stack(
             children: [
               // LAYER 1: Background
-              const GalacticBackground(showStars: true),
+              const GalacticBackground(),
 
               // LAYER 2: Data Stream (Background Overlay)
               // Constrained to middle area to visually connect Relic and Lens
@@ -138,10 +139,26 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
                       currentPage: safeCurrentPage,
                       totalPages: widget.pages.length,
                       onNext: _nextPage,
-                      onSkip: widget.onComplete,
                       isLastPage: safeCurrentPage == widget.pages.length - 1,
                     ),
                   ],
+                ),
+              ),
+
+              // Global Skip Button at top right
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 16,
+                right: 24,
+                child: TextButton(
+                  onPressed: widget.onComplete,
+                  child: Text(
+                    'SKIP SYSTEM',
+                    style: GoogleFonts.orbitron(
+                      color: const Color(0xFFD4A574).withValues(alpha: 0.8),
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -164,8 +181,8 @@ class _DeviceOnboardingState extends State<DeviceOnboarding>
 // ---------------------------------------------------------------------------
 
 class RelicChamber extends StatelessWidget {
+  const RelicChamber({required this.lottieAsset, super.key});
   final String? lottieAsset;
-  const RelicChamber({super.key, required this.lottieAsset});
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +205,6 @@ class RelicChamber extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: const Color(0xFFD4A574).withValues(alpha: 0.3),
-                    width: 1,
                   ),
                 ),
               ),
@@ -260,7 +276,6 @@ class _PulseRingState extends State<PulseRing>
                   color: const Color(
                     0xFFD4A574,
                   ).withValues(alpha: (1 - val).clamp(0.0, 1.0)),
-                  width: 1,
                 ),
               ),
             );
@@ -272,8 +287,8 @@ class _PulseRingState extends State<PulseRing>
 }
 
 class DataStream extends StatelessWidget {
+  const DataStream({required this.controller, super.key});
   final AnimationController controller;
-  const DataStream({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -289,8 +304,8 @@ class DataStream extends StatelessWidget {
 }
 
 class ParticleStreamPainter extends CustomPainter {
-  final double progress;
   ParticleStreamPainter({required this.progress});
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -311,9 +326,9 @@ class ParticleStreamPainter extends CustomPainter {
 }
 
 class ChronoLens extends StatefulWidget {
+  const ChronoLens({required this.title, required this.description, super.key});
   final String title;
   final String description;
-  const ChronoLens({super.key, required this.title, required this.description});
   @override
   State<ChronoLens> createState() => _ChronoLensState();
 }
@@ -433,8 +448,8 @@ class _ChronoLensState extends State<ChronoLens>
 }
 
 class _Gradient extends StatelessWidget {
-  final bool top;
   const _Gradient({required this.top});
+  final bool top;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -450,9 +465,9 @@ class _Gradient extends StatelessWidget {
 }
 
 class DecryptingText extends StatefulWidget {
+  const DecryptingText({required this.text, required this.style, super.key});
   final String text;
   final TextStyle style;
-  const DecryptingText({super.key, required this.text, required this.style});
   @override
   State<DecryptingText> createState() => _DecryptingTextState();
 }
@@ -476,7 +491,7 @@ class _DecryptingTextState extends State<DecryptingText> {
     }
   }
 
-  void _run() async {
+  Future<void> _run() async {
     if (!mounted) return;
 
     // Capture text and runId locally to prevent race conditions
@@ -499,7 +514,7 @@ class _DecryptingTextState extends State<DecryptingText> {
                 ? String.fromCharCode(33 + _r.nextInt(90))
                 : '');
       });
-      await Future.delayed(Duration(milliseconds: delay));
+      await Future<void>.delayed(Duration(milliseconds: delay));
     }
 
     // Final update only if still valid
@@ -514,20 +529,17 @@ class _DecryptingTextState extends State<DecryptingText> {
 }
 
 class ControlDeck extends StatelessWidget {
-  final int currentPage;
-  final int totalPages;
-  final VoidCallback onNext;
-  final VoidCallback onSkip;
-  final bool isLastPage;
-
   const ControlDeck({
-    super.key,
     required this.currentPage,
     required this.totalPages,
     required this.onNext,
-    required this.onSkip,
     required this.isLastPage,
+    super.key,
   });
+  final int currentPage;
+  final int totalPages;
+  final VoidCallback onNext;
+  final bool isLastPage;
 
   @override
   Widget build(BuildContext context) {
@@ -541,20 +553,6 @@ class ControlDeck extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (!isLastPage) ...[
-                GestureDetector(
-                  onTap: onSkip,
-                  child: Text(
-                    'SKIP SYSTEM',
-                    style: GoogleFonts.courierPrime(
-                      fontSize: 12,
-                      color: const Color(0xFFD4A574),
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-              ],
               // Indicators
               Row(
                 children: List.generate(totalPages, (i) {
@@ -583,7 +581,7 @@ class ControlDeck extends StatelessWidget {
               height: 50,
               decoration: BoxDecoration(
                 color: const Color(0xFFD4A574).withValues(alpha: 0.15),
-                border: Border.all(color: const Color(0xFFD4A574), width: 1),
+                border: Border.all(color: const Color(0xFFD4A574)),
                 borderRadius: BorderRadius.circular(4),
               ),
               alignment: Alignment.center,

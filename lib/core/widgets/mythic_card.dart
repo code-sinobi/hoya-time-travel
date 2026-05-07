@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 import '../theme/era_theme.dart';
 
 class MythicCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final EdgeInsetsGeometry margin;
-  final Color? backgroundColor;
-  final Color? borderColor;
-  final bool hasShadow;
-
   const MythicCard({
-    super.key,
     required this.child,
+    super.key,
     this.padding = const EdgeInsets.all(16),
     this.margin = EdgeInsets.zero,
     this.backgroundColor,
     this.borderColor,
     this.hasShadow = true,
   });
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry margin;
+  final Color? backgroundColor;
+  final Color? borderColor;
+  final bool hasShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +29,6 @@ class MythicCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: borderColor ?? MythicColors.bronze.withValues(alpha: 0.3),
-          width: 1,
         ),
         boxShadow: hasShadow
             ? [

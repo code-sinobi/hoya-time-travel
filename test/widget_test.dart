@@ -1,12 +1,12 @@
-// Hoya App Smoke Test
+// Chrono App Smoke Test
 // Simplified test that verifies core theme elements without full app initialization
 
+import 'package:chrono_app/core/theme/era_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hoya_app/core/theme/era_theme.dart';
 
 void main() {
-  group('HoyaApp Smoke Tests', () {
+  group('ChronoApp Smoke Tests', () {
     testWidgets('Core theme elements are defined', (tester) async {
       // Verify MythicColors are properly defined
       expect(MythicColors.voidBackground, isA<Color>());

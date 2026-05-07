@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../theme/era_theme.dart';
 
 class SciFiSearchBar extends StatefulWidget {
-  final ValueChanged<String>? onChanged;
-  final String hintText;
-
   const SciFiSearchBar({
     super.key,
     this.onChanged,
     this.hintText = 'Search the archives...',
   });
+  final ValueChanged<String>? onChanged;
+  final String hintText;
 
   @override
   State<SciFiSearchBar> createState() => _SciFiSearchBarState();
@@ -65,18 +65,13 @@ class _SciFiSearchBarState extends State<SciFiSearchBar> {
         style: GoogleFonts.exo2(color: Colors.white, fontSize: 16),
         cursorColor: MythicColors.fluxCyan,
         decoration: InputDecoration(
-          prefixIcon:
-              Icon(
-                    Icons.search,
-                    color: _isFocused
-                        ? MythicColors.fluxCyan
-                        : MythicColors.stoneGray,
-                  )
-                  .animate(target: _isFocused ? 1 : 0)
-                  .scale(
-                    begin: const Offset(1, 1),
-                    end: const Offset(1.2, 1.2),
-                  ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: _isFocused ? MythicColors.fluxCyan : MythicColors.stoneGray,
+          ).animate(target: _isFocused ? 1 : 0).scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.2, 1.2),
+              ),
           hintText: widget.hintText,
           hintStyle: GoogleFonts.exo2(
             color: MythicColors.stoneGray,

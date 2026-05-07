@@ -1,37 +1,36 @@
-import 'package:flutter/material.dart';
 import 'dart:math' show pi, Random, sin;
+
+import 'package:flutter/material.dart';
 
 /// Data model for a section of crawl text
 class CrawlSection {
+  const CrawlSection({
+    required this.title,
+    required this.body,
+    this.subtitle,
+    this.titleStyle,
+    this.bodyStyle,
+  });
   final String title;
   final String? subtitle;
   final String body;
   final TextStyle? titleStyle;
   final TextStyle? bodyStyle;
-
-  const CrawlSection({
-    required this.title,
-    this.subtitle,
-    required this.body,
-    this.titleStyle,
-    this.bodyStyle,
-  });
 }
 
 /// Cinematic Star Wars-style text crawl with 3D perspective
 class MythologyCrawl extends StatefulWidget {
-  final List<CrawlSection> sections;
-  final Duration crawlDuration;
-  final VoidCallback? onComplete;
-  final bool enableParallax;
-
   const MythologyCrawl({
-    super.key,
     required this.sections,
+    super.key,
     this.crawlDuration = const Duration(seconds: 25),
     this.onComplete,
     this.enableParallax = true,
   });
+  final List<CrawlSection> sections;
+  final Duration crawlDuration;
+  final VoidCallback? onComplete;
+  final bool enableParallax;
 
   @override
   State<MythologyCrawl> createState() => _MythologyCrawlState();
@@ -395,13 +394,6 @@ class _MythologyCrawlState extends State<MythologyCrawl>
 
 // Parallax Data Models
 class ParallaxLayer {
-  final double speed;
-  final int particleCount;
-  final RangeValues sizeRange;
-  final RangeValues opacityRange;
-  final Color color;
-  final List<Particle> particles;
-
   ParallaxLayer({
     required this.speed,
     required this.particleCount,
@@ -413,15 +405,15 @@ class ParallaxLayer {
           particleCount,
           (_) => Particle.random(random, sizeRange, opacityRange),
         );
+  final double speed;
+  final int particleCount;
+  final RangeValues sizeRange;
+  final RangeValues opacityRange;
+  final Color color;
+  final List<Particle> particles;
 }
 
 class Particle {
-  final double x;
-  final double y;
-  final double size;
-  final double opacity;
-  final double twinkleSpeed;
-
   Particle({
     required this.x,
     required this.y,
@@ -445,19 +437,23 @@ class Particle {
       twinkleSpeed: 0.5 + random.nextDouble() * 2.0,
     );
   }
+  final double x;
+  final double y;
+  final double size;
+  final double opacity;
+  final double twinkleSpeed;
 }
 
 // Custom Painter for Parallax Effect
 class ParallaxPainter extends CustomPainter {
-  final ParallaxLayer layer;
-  final double progress;
-  final bool isPaused;
-
   ParallaxPainter({
     required this.layer,
     required this.progress,
     required this.isPaused,
   });
+  final ParallaxLayer layer;
+  final double progress;
+  final bool isPaused;
 
   @override
   void paint(Canvas canvas, Size size) {

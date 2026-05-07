@@ -6,13 +6,12 @@ part of 'story_service.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$storyServiceHash() => r'f6763dcf940dc64d507f52ae39d15ba9c60971f0';
+String _$storyServiceHash() => r'd058669f65aea5b52ae008620b461927f325dce5';
 
-/// See also [StoryService].
-@ProviderFor(StoryService)
-final storyServiceProvider =
-    AutoDisposeNotifierProvider<StoryService, void>.internal(
-  StoryService.new,
+/// See also [storyService].
+@ProviderFor(storyService)
+final storyServiceProvider = Provider<StoryService>.internal(
+  storyService,
   name: r'storyServiceProvider',
   debugGetCreateSourceHash:
       const bool.fromEnvironment('dart.vm.product') ? null : _$storyServiceHash,
@@ -20,6 +19,8 @@ final storyServiceProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$StoryService = AutoDisposeNotifier<void>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StoryServiceRef = ProviderRef<StoryService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

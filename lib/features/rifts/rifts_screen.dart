@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/era_theme.dart';
 import '../../core/widgets/galactic_background.dart';
@@ -53,7 +53,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
       body: Stack(
         children: [
           // Animated star background
-          const GalacticBackground(showStars: true),
+          const GalacticBackground(),
 
           SafeArea(
             child: Column(
@@ -69,7 +69,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
                   child: anomaliesStream.when(
                     data: (anomalies) =>
                         _buildAnomalyList(context, ref, anomalies),
-                    loading: () => _buildLoadingState(),
+                    loading: _buildLoadingState,
                     error: (e, _) => _buildErrorState(e, ref),
                   ),
                 ),
@@ -137,7 +137,6 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
                 fontWeight: FontWeight.bold,
                 shadows: [
                   const BoxShadow(
-                    color: Colors.black,
                     blurRadius: 4,
                   ),
                 ],
@@ -147,6 +146,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
           ),
           // Selection toggle button
           IconButton(
+            tooltip: _selectionMode ? 'Cancel selection' : 'Select anomalies',
             icon: Icon(
               _selectionMode ? Icons.close : Icons.checklist,
               color: MythicColors.ochreRed.withValues(alpha: 0.7),
@@ -262,7 +262,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'SCAN ERROR',
+              'Unable to scan anomalies',
               style: GoogleFonts.orbitron(
                 color: Colors.white70,
                 fontSize: 16,
@@ -325,7 +325,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
   }
 
   void _handlePurge(BuildContext context, WidgetRef ref, Anomaly anomaly) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
@@ -377,31 +377,11 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
               backgroundColor: MythicColors.ochreRed.withValues(alpha: 0.3),
               foregroundColor: MythicColors.ochreRed,
             ),
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              try {
-                await ref
-                    .read(anomalyControllerProvider.notifier)
-                    .purgeAnomaly(anomaly.id);
-                
-                if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Anomaly ${anomaly.title} purged.'),
-                      backgroundColor: MythicColors.ochreRed,
-                    ),
-                  );
-                }
-              } catch (e) {
-                 if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Purge failed. Insufficient energy?'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
+              ref
+                  .read(anomalyControllerProvider.notifier)
+                  .purgeAnomaly(anomaly.id);
             },
             child: Text(
               'PURGE',
@@ -425,7 +405,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
         duration: const Duration(seconds: 1),
       ),
     );
-    context.push('/story/${anomaly.storyId}');
+    context.push('/story/${anomaly.storyId}/intro');
   }
 
   void _handleBulkPurge(
@@ -441,7 +421,7 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
     final cascadeCount =
         selectedList.fold(0, (sum, a) => sum + a.cascadeAnomalyIds.length);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
@@ -493,32 +473,13 @@ class _RiftsScreenState extends ConsumerState<RiftsScreen> {
               backgroundColor: MythicColors.ochreRed.withValues(alpha: 0.3),
               foregroundColor: MythicColors.ochreRed,
             ),
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              try {
-                await ref
-                    .read(anomalyControllerProvider.notifier)
-                    .purgeAnomalies(_selectedAnomalies.toList());
+              ref
+                  .read(anomalyControllerProvider.notifier)
+                  .purgeAnomalies(_selectedAnomalies.toList());
 
-                if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${_selectedAnomalies.length} anomalies purged.'),
-                      backgroundColor: MythicColors.ochreRed,
-                    ),
-                  );
-                }
-                _toggleSelectionMode(); // Exit mode after purge
-              } catch (e) {
-                 if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Bulk purge failed.'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
+              _toggleSelectionMode(); // Exit mode after purge
             },
             child: Text(
               'PURGE ALL',

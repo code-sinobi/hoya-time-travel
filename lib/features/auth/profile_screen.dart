@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:go_router/go_router.dart';
 import '../../core/theme/era_theme.dart';
 import '../../core/widgets/galactic_background.dart';
-import '../story/repositories/story_repository.dart';
+import '../achievements/models/achievement.dart';
+import '../achievements/providers/achievement_provider.dart';
+import '../community/presentation/snippet_compose_sheet.dart';
+import '../living_story/presentation/echo_mentor_sheet.dart';
+import '../living_story/presentation/echoes_sheet.dart';
+import '../living_story/presentation/user_traits_controller.dart';
+import '../living_story/presentation/widgets/journey_map_chart.dart';
+import '../living_story/presentation/widgets/wisdom_compass_chart.dart';
 import 'services/auth_service.dart';
 import 'services/profile_service.dart';
 
@@ -16,18 +23,16 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
-    final progressAsync = ref.watch(allUserProgressProvider);
 
     return Scaffold(
       backgroundColor: MythicColors.voidBackground,
       body: Stack(
         children: [
-          const GalacticBackground(showStars: true),
+          const GalacticBackground(),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
                   Text(
@@ -51,7 +56,6 @@ class ProfileScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: MythicColors.bronze.withValues(alpha: 0.6),
-                        width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -149,35 +153,202 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 24),
 
-                        // Coin Stats
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _StatCoin(
-                                label: 'LEVEL',
-                                value: '${profileAsync.value?.level ?? 1}',
-                                icon: Icons.star_border,
+                        // Subscription Badge
+                        profileAsync.when(
+                          data: (profile) {
+                            final isPatron =
+                                profile?.subscriptionTier == 'patron' ||
+                                    profile?.subscriptionTier == 'oracle';
+                            return Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isPatron
+                                        ? MythicColors.bronze
+                                            .withValues(alpha: 0.2)
+                                        : Colors.transparent,
+                                    border: Border.all(
+                                      color: isPatron
+                                          ? MythicColors.bronze
+                                          : Colors.white24,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'TIER: ${(profile?.subscriptionTier ?? "FREE").toUpperCase()}',
+                                    style: GoogleFonts.cinzel(
+                                      color: isPatron
+                                          ? MythicColors.bronze
+                                          : Colors.white54,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
+                                if (!isPatron) ...[
+                                  const SizedBox(height: 12),
+                                  OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: MythicColors.bronze,
+                                      ),
+                                      foregroundColor: MythicColors.bronze,
+                                    ),
+                                    onPressed: () {
+                                      ref
+                                          .read(userProfileProvider.notifier)
+                                          .upgradeSubscription();
+                                    },
+                                    child: const Text('UPGRADE TO PATRON'),
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        profileAsync.when(
+                          data: (profile) {
+                            if (profile?.role == 'chronicler' ||
+                                profile?.role == 'admin') {
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 20),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: MythicColors.deepIndigo
+                                      .withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: MythicColors.deepIndigo,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.edit_note,
+                                      color: Colors.cyanAccent,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'MASTER CHRONICLER',
+                                      style: GoogleFonts.cinzel(
+                                        color: Colors.cyanAccent,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 24.0),
+                              child: TextButton.icon(
+                                icon: const Icon(
+                                  Icons.history_edu,
+                                  color: MythicColors.bronze,
+                                ),
+                                label: Text(
+                                  'BECOME A CHRONICLER',
+                                  style: GoogleFonts.cinzel(
+                                    color: MythicColors.bronze,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  context.push('/chronicler/onboarding');
+                                },
                               ),
-                              _StatCoin(
-                                label: 'XP',
-                                value: '${profileAsync.value?.xp ?? 0}',
-                                icon: Icons.auto_awesome,
-                              ),
-                              _StatCoin(
-                                label: 'WISDOM',
-                                value: '${progressAsync.value?.length ?? 0}',
-                                icon: Icons.menu_book,
-                              ),
-                            ],
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+
+                        // Wisdom Compass Section
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'WISDOM COMPASS',
+                            style: GoogleFonts.cinzel(
+                              fontSize: 14,
+                              color: MythicColors.bronze,
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        ref.watch(userTraitsControllerProvider).when(
+                              data: (traits) => SizedBox(
+                                height: 220,
+                                child: WisdomCompassChart(
+                                  traits: traits.toCompassMap(),
+                                ),
+                              ),
+                              loading: () => const SizedBox(
+                                height: 220,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: MythicColors.bronze,
+                                  ),
+                                ),
+                              ),
+                              error: (_, __) => const SizedBox(
+                                height: 220,
+                              ), // Fail gracefully
+                            ),
                       ],
                     ),
                   ),
+
+                  // Journey Map Section
+                  const SizedBox(height: 32),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'JOURNEY CHRONICLE',
+                      style: GoogleFonts.cinzel(
+                        fontSize: 14,
+                        color: MythicColors.bronze,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ref.watch(userTraitsControllerProvider).when(
+                        data: (traits) => JourneyMapChart(
+                          history: traits.traitHistory,
+                          height: 180,
+                        ),
+                        loading: () => const SizedBox(height: 180),
+                        error: (_, __) => const SizedBox(
+                          height: 180,
+                          child: Center(
+                            child: Text(
+                              'Unable to load chronicle',
+                              style: TextStyle(
+                                color: MythicColors.stoneGray,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
 
                   const SizedBox(height: 32),
 
@@ -204,33 +375,85 @@ class ProfileScreen extends ConsumerWidget {
                         color: MythicColors.stoneGray.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _AchievementBadge(
-                          icon: Icons.local_fire_department,
-                          label: 'Prometheus',
+                    child: ref.watch(achievementNotifierProvider).when(
+                          data: (achievements) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children:
+                                  achievements.cast<Achievement>().map((a) {
+                                return _AchievementBadge(
+                                  achievement: a,
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(
+                              color: MythicColors.bronze,
+                            ),
+                          ),
+                          error: (err, _) => const Center(
+                            child: Text(
+                              'Failed to load honors',
+                              style: TextStyle(color: MythicColors.stoneGray),
+                            ),
+                          ),
                         ),
-                        _AchievementBadge(
-                          icon: Icons.shield,
-                          label: 'Guardian',
-                        ),
-                        _AchievementBadge(icon: Icons.explore, label: 'Nomad'),
-                        _AchievementBadge(
-                          icon: Icons.lock_open,
-                          label: 'Keymaster',
-                        ),
-                      ],
-                    ),
                   ),
 
                   const SizedBox(height: 32),
 
                   // Menu Options
                   _MenuButton(
-                    icon: Icons.settings_outlined,
-                    label: 'TEMPORAL RITUALS',
-                    onTap: () {},
+                    icon: Icons.spatial_audio_off,
+                    label: 'SPEAK TO THE ECHO',
+                    onTap: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => DraggableScrollableSheet(
+                          initialChildSize: 0.6,
+                          minChildSize: 0.4,
+                          maxChildSize: 0.9,
+                          builder: (_, controller) => const EchoMentorSheet(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuButton(
+                    icon: Icons.auto_stories,
+                    label: 'MEMORY ARCHIVE',
+                    onTap: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => DraggableScrollableSheet(
+                          initialChildSize: 0.6,
+                          minChildSize: 0.4,
+                          maxChildSize: 0.9,
+                          builder: (_, controller) => const EchoesSheet(),
+                        ),
+                      );
+                    },
+                  ),
+                  _MenuButton(
+                    icon: Icons.edit_note,
+                    label: 'ETCH A SNIPPET',
+                    onTap: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                          ),
+                          child: const SnippetComposeSheet(),
+                        ),
+                      );
+                    },
                   ),
                   _MenuButton(
                     icon: Icons.cloud_sync_outlined,
@@ -250,7 +473,7 @@ class ProfileScreen extends ConsumerWidget {
                   // Sever Link Button (Wax Seal style)
                   GestureDetector(
                     onTap: () {
-                      showDialog(
+                      showDialog<void>(
                         context: context,
                         builder: (c) => AlertDialog(
                           backgroundColor: const Color(0xFF1A1A24),
@@ -290,9 +513,17 @@ class ProfileScreen extends ConsumerWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 Navigator.pop(c);
-                                ref.read(authServiceProvider).signOut();
+                                await ref.read(authServiceProvider).signOut();
+
+                                // Explicit cache invalidation to prevent data leaks
+                                ref.invalidate(userProfileProvider);
+                                ref.invalidate(userTraitsControllerProvider);
+                                // Also invalidate rifts/anomalies if imported,
+                                // but we might not have it imported here.
+                                // Instead of importing anomalies_provider here,
+                                // Riverpod's autoDispose handles most, but we force Profile/Traits.
                               },
                             ),
                           ],
@@ -340,107 +571,30 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _StatCoin extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-
-  const _StatCoin({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF1E1E2C),
-            border: Border.all(
-              color: MythicColors.bronze.withValues(alpha: 0.3),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: MythicColors.bronze.withValues(alpha: 0.2),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ],
-            gradient: const RadialGradient(
-              colors: [Color(0xFF2C241B), Colors.black],
-              center: Alignment.topLeft,
-              radius: 1.2,
-            ),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Progress Ring
-              const SizedBox(
-                width: 70,
-                height: 70,
-                child: CircularProgressIndicator(
-                  value: 0.7, // Mock value or pass in
-                  strokeWidth: 2,
-                  color: MythicColors.bronze,
-                  backgroundColor: Colors.transparent,
-                ),
-              ),
-              Icon(icon, size: 40, color: Colors.white.withValues(alpha: 0.05)),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    value,
-                    style: GoogleFonts.cinzelDecorative(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: MythicColors.bronze,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          label,
-          style: GoogleFonts.cinzel(
-            fontSize: 10,
-            color: MythicColors.parchment.withValues(alpha: 0.7),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _AchievementBadge extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _AchievementBadge({required this.icon, required this.label});
+  const _AchievementBadge({required this.achievement});
+  final Achievement achievement;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(icon, color: MythicColors.bronze.withValues(alpha: 0.5), size: 30),
-        const SizedBox(height: 4),
+        Icon(
+          achievement.iconData,
+          color: achievement.isUnlocked
+              ? MythicColors.bronze
+              : MythicColors.bronze.withValues(alpha: 0.2),
+          size: 30,
+        )
+            .animate(target: achievement.isUnlocked ? 1 : 0)
+            .shimmer(duration: 2000.ms, color: Colors.white24),
         Text(
-          label,
+          achievement.title,
           style: GoogleFonts.cormorantGaramond(
             fontSize: 10,
-            color: MythicColors.stoneGray,
+            color: achievement.isUnlocked
+                ? MythicColors.parchment
+                : MythicColors.stoneGray.withValues(alpha: 0.5),
           ),
         ),
       ],
@@ -449,15 +603,14 @@ class _AchievementBadge extends StatelessWidget {
 }
 
 class _MenuButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
   const _MenuButton({
     required this.icon,
     required this.label,
     required this.onTap,
   });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

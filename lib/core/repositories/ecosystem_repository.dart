@@ -1,6 +1,7 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../utils/logger.dart';
 
 part 'ecosystem_repository.g.dart';
@@ -11,9 +12,8 @@ EcosystemRepository ecosystemRepository(Ref ref) {
 }
 
 class EcosystemRepository {
-  final SupabaseClient _client;
-
   EcosystemRepository(this._client);
+  final SupabaseClient _client;
 
   /// 1. User Traits / Wisdom Compass
   Future<Map<String, int>> getUserTraits() async {
@@ -34,7 +34,7 @@ class EcosystemRepository {
         'wisdom': response['wisdom'] as int,
         'patience': response['patience'] as int,
       };
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error fetching user traits', error: e);
       return {};
     }
@@ -52,7 +52,7 @@ class EcosystemRepository {
         trait: currentValue + delta,
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('user_id', userId);
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error updating trait $trait', error: e);
     }
   }
@@ -74,7 +74,7 @@ class EcosystemRepository {
         'source_culture': culture,
         'theme': theme,
       });
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error submitting snippet', error: e);
     }
   }
@@ -92,7 +92,7 @@ class EcosystemRepository {
           .order('created_at', ascending: true);
 
       return List<Map<String, dynamic>>.from(response);
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error fetching mentor history', error: e);
       return [];
     }
@@ -108,7 +108,7 @@ class EcosystemRepository {
         'role': role,
         'message': message,
       });
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error saving mentor message', error: e);
     }
   }
@@ -124,7 +124,7 @@ class EcosystemRepository {
           .gte('end_time', now);
 
       return List<Map<String, dynamic>>.from(response);
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error fetching active events', error: e);
       return [];
     }

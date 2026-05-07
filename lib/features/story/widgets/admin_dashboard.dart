@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../core/ai/openrouter_service.dart';
 import '../data/story_library.dart';
 import '../services/narrative_orchestrator.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminDashboard extends ConsumerStatefulWidget {
   const AdminDashboard({super.key});
@@ -31,14 +32,14 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
     try {
       await _orchestrator.expandStory(story);
       setState(() => _status[story.id] = 'Done ✅');
-    } catch (e) {
+    } on Object {
       setState(() => _status[story.id] = 'Error ❌');
     }
   }
 
   Future<void> _expandAll() async {
     setState(() => _isExpandingAll = true);
-    for (final story in storyLibrary) {
+    for (final story in fallbackStoryLibrary) {
       await _expandStory(story);
     }
     setState(() => _isExpandingAll = false);
@@ -48,7 +49,7 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hoya Admin - Story Expansion'),
+        title: const Text('Chrono Admin - Story Expansion'),
         actions: [
           if (!_isExpandingAll)
             TextButton.icon(
@@ -72,9 +73,9 @@ class _AdminDashboardState extends ConsumerState<AdminDashboard> {
         ],
       ),
       body: ListView.builder(
-        itemCount: storyLibrary.length,
+        itemCount: fallbackStoryLibrary.length,
         itemBuilder: (context, index) {
-          final story = storyLibrary[index];
+          final story = fallbackStoryLibrary[index];
           final status = _status[story.id] ?? 'Pending';
 
           return ListTile(

@@ -4,16 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../story/data/story_library.dart';
 
 class ArchiveSlabCard extends StatelessWidget {
-  final StoryMetadata story;
-  final bool isCompleted;
-  final VoidCallback onTap;
-
   const ArchiveSlabCard({
-    super.key,
     required this.story,
     required this.isCompleted,
     required this.onTap,
+    super.key,
   });
+  final StoryMetadata story;
+  final bool isCompleted;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +37,9 @@ class ArchiveSlabCard extends StatelessWidget {
               color: isCompleted ? bronze : cyan.withValues(alpha: 0.3),
               width: 4,
             ),
-            top: BorderSide(color: bronze.withValues(alpha: 0.3), width: 1),
-            bottom: BorderSide(color: bronze.withValues(alpha: 0.3), width: 1),
-            right: BorderSide(color: bronze.withValues(alpha: 0.3), width: 1),
+            top: BorderSide(color: bronze.withValues(alpha: 0.3)),
+            bottom: BorderSide(color: bronze.withValues(alpha: 0.3)),
+            right: BorderSide(color: bronze.withValues(alpha: 0.3)),
           ),
           boxShadow: [
             BoxShadow(
@@ -165,7 +164,6 @@ class ArchiveSlabCard extends StatelessWidget {
                 border: Border(
                   left: BorderSide(
                     color: bronze.withValues(alpha: 0.2),
-                    width: 1,
                   ),
                 ),
               ),

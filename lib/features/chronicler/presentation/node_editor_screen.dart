@@ -14,14 +14,13 @@ final currentNodeProvider =
 });
 
 class NodeEditorScreen extends ConsumerStatefulWidget {
-  final String storyId;
-  final String nodeId;
-
   const NodeEditorScreen({
-    super.key,
     required this.storyId,
     required this.nodeId,
+    super.key,
   });
+  final String storyId;
+  final String nodeId;
 
   @override
   ConsumerState<NodeEditorScreen> createState() => _NodeEditorScreenState();
@@ -92,11 +91,11 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         ref.invalidate(storyNodesProvider(widget.storyId));
         context.pop();
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving node. Please check your data.'),
+            content: Text('Error saving: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -298,7 +297,6 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
         StoryChoice(
           id: 'new_${DateTime.now().millisecondsSinceEpoch}',
           text: 'New Choice',
-          nextNodeId: null,
         ),
       );
       _isDirty = true;
@@ -309,7 +307,7 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
     final textCtrl = TextEditingController(text: choice.text);
     final targetCtrl = TextEditingController(text: choice.nextNodeId ?? '');
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E2C),
@@ -343,8 +341,6 @@ class _NodeEditorScreenState extends ConsumerState<NodeEditorScreen> {
                 _isDirty = true;
               });
               Navigator.pop(ctx);
-              textCtrl.dispose();
-              targetCtrl.dispose();
             },
           ),
         ],

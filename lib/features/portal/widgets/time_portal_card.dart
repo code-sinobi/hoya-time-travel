@@ -7,10 +7,9 @@ import '../../../core/theme/galactic_colors.dart';
 import '../../story/data/story_library.dart'; // Ensure correct import
 
 class TimePortalCard extends StatefulWidget {
+  const TimePortalCard({required this.story, required this.onEnter, super.key});
   final StoryMetadata story;
   final VoidCallback onEnter;
-
-  const TimePortalCard({super.key, required this.story, required this.onEnter});
 
   @override
   State<TimePortalCard> createState() => _TimePortalCardState();
@@ -85,7 +84,7 @@ class _TimePortalCardState extends State<TimePortalCard>
     // Basic era mapping or default colors
     final eraColors =
         GalacticColors.eraGradients[widget.story.era.toLowerCase()] ??
-        [GalacticColors.etherealCyan, GalacticColors.wormholeBlue];
+            [GalacticColors.etherealCyan, GalacticColors.wormholeBlue];
 
     return GestureDetector(
       onLongPressStart: (_) => _startCharging(),
@@ -112,7 +111,6 @@ class _TimePortalCardState extends State<TimePortalCard>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 gradient: RadialGradient(
-                  center: Alignment.center,
                   radius: 1.2,
                   colors: [
                     eraColors[0].withValues(alpha: 0.8),

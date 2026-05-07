@@ -3,20 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../story/data/story_library.dart';
 import '../../../core/theme/era_theme.dart';
+import '../../story/data/story_library.dart';
 
 class MythicSlabCard extends ConsumerStatefulWidget {
-  final StoryMetadata story;
-  final bool isLocked;
-  final VoidCallback onTap;
-
   const MythicSlabCard({
-    super.key,
     required this.story,
     required this.isLocked,
     required this.onTap,
+    super.key,
   });
+  final StoryMetadata story;
+  final bool isLocked;
+  final VoidCallback onTap;
 
   @override
   ConsumerState<MythicSlabCard> createState() => _MythicSlabCardState();
@@ -75,7 +74,7 @@ class _MythicSlabCardState extends ConsumerState<MythicSlabCard>
     // AspectRatio constraint
     return AspectRatio(
       aspectRatio: 9 / 16,
-      child: Container(
+      child: DecoratedBox(
         // No margin here, handled by carousel
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
@@ -98,10 +97,6 @@ class _MythicSlabCardState extends ConsumerState<MythicSlabCard>
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
-                cacheWidth:
-                    800, // Optimized for performance (source images are 8k)
-                errorBuilder: (c, e, s) =>
-                    Container(color: MythicColors.voidBackground),
               ),
 
               // 2. Glassmorphism Overlay (Gradient Only - optimized for performance)
@@ -129,7 +124,6 @@ class _MythicSlabCardState extends ConsumerState<MythicSlabCard>
                       return Container(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
-                            center: Alignment.center,
                             radius: 1.5 * _chargeAnimation.value,
                             colors: [
                               MythicColors.wormholeBlue.withValues(
@@ -205,7 +199,6 @@ class _MythicSlabCardState extends ConsumerState<MythicSlabCard>
                                 blurRadius: 15,
                               ),
                               const BoxShadow(
-                                color: Colors.black,
                                 blurRadius: 2,
                                 offset: Offset(1, 1),
                               ),
@@ -274,19 +267,17 @@ class _MythicSlabCardState extends ConsumerState<MythicSlabCard>
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: widget.isLocked ? null : widget.onTap,
-                  onLongPressStart: widget.isLocked
-                      ? null
-                      : (_) => _startCharging(),
-                  onLongPressEnd: widget.isLocked
-                      ? null
-                      : (_) => _cancelCharging(),
+                  onLongPressStart:
+                      widget.isLocked ? null : (_) => _startCharging(),
+                  onLongPressEnd:
+                      widget.isLocked ? null : (_) => _cancelCharging(),
                   child: const SizedBox.expand(),
                 ),
               ),
 
               // 6. Locked Overlay
               if (widget.isLocked)
-                Container(
+                ColoredBox(
                   color: Colors.black.withValues(alpha: 0.7),
                   child: Center(
                     child: Column(

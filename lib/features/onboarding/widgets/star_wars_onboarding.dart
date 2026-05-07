@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+
 import '../data/onboarding_content.dart';
 
 class StarWarsOnboarding extends StatefulWidget {
-  final List<OnboardingPageData> pages;
-  final VoidCallback onComplete;
-
   const StarWarsOnboarding({
-    super.key,
     required this.pages,
     required this.onComplete,
+    super.key,
   });
+  final List<OnboardingPageData> pages;
+  final VoidCallback onComplete;
 
   @override
   State<StarWarsOnboarding> createState() => _StarWarsOnboardingState();
@@ -157,7 +157,7 @@ class _StarWarsOnboardingState extends State<StarWarsOnboarding>
   }
 
   Widget _buildStarfield() {
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: RadialGradient(
           center: Alignment.topCenter,

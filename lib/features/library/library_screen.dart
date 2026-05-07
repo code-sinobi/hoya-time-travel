@@ -1,15 +1,53 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../../core/widgets/galactic_background.dart';
 import '../../core/theme/era_theme.dart';
+import '../../core/widgets/galactic_background.dart';
 import '../../core/widgets/sci_fi_search_bar.dart';
 import '../story/data/story_library.dart';
 import 'widgets/sci_fi_story_card.dart'; // Renamed class inside, keeping file name
+
+final librarySearchQueryProvider =
+    StateProvider.autoDispose<String>((ref) => '');
+final librarySelectedEraProvider =
+    StateProvider.autoDispose<String?>((ref) => null);
+
+final libraryFilteredStoriesProvider =
+    FutureProvider.autoDispose<List<StoryMetadata>>((ref) async {
+  final query = ref.watch(librarySearchQueryProvider);
+  final era = ref.watch(librarySelectedEraProvider);
+
+  // Debounce
+  bool cancelled = false;
+  ref.onDispose(() => cancelled = true);
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  if (cancelled) return []; // Will be ignored by riverpod when disposed
+
+  // Simulate remote fetch
+  await Future<void>.delayed(const Duration(milliseconds: 500));
+  if (cancelled) return [];
+
+  var stories = ref.watch(storyLibraryProvider);
+  if (era != null) {
+    stories = stories.where((s) => s.era == era).toList();
+  }
+  if (query.isNotEmpty) {
+    stories = stories
+        .where(
+          (s) =>
+              s.title.toLowerCase().contains(query.toLowerCase()) ||
+              s.moral.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
+  }
+  return stories;
+});
 
 class LibraryScreen extends ConsumerStatefulWidget {
   const LibraryScreen({super.key});
@@ -19,38 +57,39 @@ class LibraryScreen extends ConsumerStatefulWidget {
 }
 
 class _LibraryScreenState extends ConsumerState<LibraryScreen> {
-  String? _selectedEra;
-  String _searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
 
-  List<StoryMetadata> get _filteredStories {
-    var stories = storyLibrary;
-    if (_selectedEra != null) {
-      stories = stories.where((s) => s.era == _selectedEra).toList();
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    // Pagination trigger logic for future remote data
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // ref.read(libraryPaginationProvider.notifier).loadMore();
     }
-    if (_searchQuery.isNotEmpty) {
-      stories = stories
-          .where(
-            (s) =>
-                s.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                s.moral.toLowerCase().contains(_searchQuery.toLowerCase()),
-          )
-          .toList();
-    }
-    return stories;
   }
 
   @override
   Widget build(BuildContext context) {
-    // We don't need 'completedIds' to filter viewing necessarily, just marking?
-    // Using filtered stories directly.
-    final stories = _filteredStories;
+    final storiesAsync = ref.watch(libraryFilteredStoriesProvider);
+    final selectedEra = ref.watch(librarySelectedEraProvider);
 
     return Scaffold(
       backgroundColor: MythicColors.voidBackground,
       body: Stack(
         children: [
           // BG
-          const GalacticBackground(showStars: true),
+          const GalacticBackground(),
 
           // Content
           SafeArea(
@@ -110,7 +149,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: SciFiSearchBar(
-                    onChanged: (value) => setState(() => _searchQuery = value),
+                    onChanged: (value) => ref
+                        .read(librarySearchQueryProvider.notifier)
+                        .state = value,
                     hintText: 'Search timelines...',
                   ),
                 ),
@@ -119,7 +160,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
                 // Era Filters (Futuristic Chips)
                 SizedBox(
-                  height: 36,
+                  height: 48,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -127,7 +168,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                     itemBuilder: (context, index) {
                       final isAll = index == 0;
                       final era = isAll ? null : _availableEras[index - 1];
-                      final isSelected = _selectedEra == era;
+                      final isSelected = selectedEra == era;
                       final filterColor = isSelected
                           ? MythicColors.temporalGold
                           : MythicColors.stoneGray;
@@ -137,7 +178,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () => setState(() => _selectedEra = era),
+                            onTap: () => ref
+                                .read(librarySelectedEraProvider.notifier)
+                                .state = era,
                             borderRadius: BorderRadius.circular(18),
                             child: AnimatedContainer(
                               duration: 200.ms,
@@ -192,10 +235,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
                 const SizedBox(height: 16),
 
-                // Masonry Grid
+                // Masonry Grid or Loading State
                 Expanded(
-                  child: stories.isEmpty
-                      ? Center(
+                  child: storiesAsync.when(
+                    data: (stories) {
+                      if (stories.isEmpty) {
+                        return Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -214,34 +259,47 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                               ),
                             ],
                           ),
-                        )
-                      : MasonryGridView.count(
-                          padding: const EdgeInsets.fromLTRB(
-                            24,
-                            0,
-                            24,
-                            100,
-                          ), // Bottom pad for nav
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          itemCount: stories.length,
-                          itemBuilder: (context, index) {
-                            final story = stories[index];
-                            return AspectRatio(
-                              aspectRatio:
-                                  2 /
-                                  3, // Fixed ratio for cards to ensure uniform height in staggered grid if desired, or let content drive it.
-                              // Requirement says "Standardize card size (2:3 aspect ratio)".
-                              // So we wrap constraint here.
-                              child: SciFiStoryCard(
-                                story: story,
-                                index: index,
-                                onTap: () => context.push('/story/${story.id}'),
-                              ),
-                            );
-                          },
-                        ),
+                        );
+                      }
+
+                      return MasonryGridView.count(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(
+                          24,
+                          0,
+                          24,
+                          100,
+                        ), // Bottom pad for nav
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        itemCount: stories.length,
+                        itemBuilder: (context, index) {
+                          final story = stories[index];
+                          return AspectRatio(
+                            aspectRatio: 2 / 3,
+                            child: SciFiStoryCard(
+                              story: story,
+                              index: index,
+                              onTap: () =>
+                                  context.push('/story/${story.id}/intro'),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(
+                        color: MythicColors.fluxCyan,
+                      ),
+                    ),
+                    error: (err, stack) => Center(
+                      child: Text(
+                        'Error: $err',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -252,6 +310,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 
   List<String> get _availableEras {
-    return storyLibrary.map((s) => s.era).toSet().toList()..sort();
+    return ref.watch(storyLibraryProvider).map((s) => s.era).toSet().toList()
+      ..sort();
   }
 }

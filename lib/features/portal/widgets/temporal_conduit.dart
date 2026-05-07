@@ -60,12 +60,6 @@ class _TemporalConduitState extends State<TemporalConduit>
 }
 
 class ConduitParticle {
-  double angle;
-  double radius;
-  double speed;
-  double size;
-  double opacity;
-
   ConduitParticle({
     required this.angle,
     required this.radius,
@@ -73,13 +67,17 @@ class ConduitParticle {
     required this.size,
     required this.opacity,
   });
+  double angle;
+  double radius;
+  double speed;
+  double size;
+  double opacity;
 }
 
 class ConduitPainter extends CustomPainter {
+  ConduitPainter({required this.progress, required this.particles});
   final double progress;
   final List<ConduitParticle> particles;
-
-  ConduitPainter({required this.progress, required this.particles});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -101,7 +99,7 @@ class ConduitPainter extends CustomPainter {
     paint.shader = null;
 
     // Draw Particles
-    for (var particle in particles) {
+    for (final particle in particles) {
       // Rotate particle based on speed and global progress
       final currentAngle =
           particle.angle + (progress * math.pi * 2 * particle.speed);

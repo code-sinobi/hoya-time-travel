@@ -2,81 +2,140 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'user_traits.g.dart';
 
+/// The Wisdom Compass - tracks user's growth across 5 core virtues
+/// Values increase/decrease based on story choices
 @JsonSerializable()
 class UserTraits {
-  final String userId;
-  final int order;
-  final int chaos;
-  final int heroism;
-  final int pragmatism;
-  final DateTime lastUpdated;
-
-  UserTraits({
+  const UserTraits({
     required this.userId,
-    required this.order,
-    required this.chaos,
-    required this.heroism,
-    required this.pragmatism,
-    required this.lastUpdated,
+    this.empathy = 0,
+    this.justice = 0,
+    this.courage = 0,
+    this.wisdom = 0,
+    this.patience = 0,
+    this.traitHistory = const [],
+    this.updatedAt,
   });
+
+  /// Creates default traits for a new user with all values at 0
+  factory UserTraits.defaults(String userId) => UserTraits(userId: userId);
 
   factory UserTraits.fromJson(Map<String, dynamic> json) =>
       _$UserTraitsFromJson(json);
+  @JsonKey(name: 'user_id')
+  final String userId;
 
-  Map<String, dynamic> toJson() => _$UserTraitsToJson(this);
+  final int empathy;
+  final int justice;
+  final int courage;
+  final int wisdom;
+  final int patience;
 
-  /// Default starting traits for a new user.
-  factory UserTraits.defaults(String userId) {
-    return UserTraits(
-      userId: userId,
-      order: 50,
-      chaos: 50,
-      heroism: 50,
-      pragmatism: 50,
-      lastUpdated: DateTime.now(),
-    );
+  @JsonKey(name: 'trait_history')
+  final List<TraitChange> traitHistory;
+
+  @JsonKey(name: 'updated_at')
+  final DateTime? updatedAt;
+
+  /// Get the dominant trait (highest value)
+  String get dominantTrait {
+    final traits = {
+      'empathy': empathy,
+      'justice': justice,
+      'courage': courage,
+      'wisdom': wisdom,
+      'patience': patience,
+    };
+    return traits.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   }
 
-  UserTraits copyWithTrait(String traitName, int newValue) {
-    return UserTraits(
-      userId: userId,
-      order: traitName.toLowerCase() == 'order' ? newValue : order,
-      chaos: traitName.toLowerCase() == 'chaos' ? newValue : chaos,
-      heroism: traitName.toLowerCase() == 'heroism' ? newValue : heroism,
-      pragmatism: traitName.toLowerCase() == 'pragmatism' ? newValue : pragmatism,
-      lastUpdated: DateTime.now(),
-    );
+  /// Get the weakest trait (lowest value)
+  String get weakestTrait {
+    final traits = {
+      'empathy': empathy,
+      'justice': justice,
+      'courage': courage,
+      'wisdom': wisdom,
+      'patience': patience,
+    };
+    return traits.entries.reduce((a, b) => a.value < b.value ? a : b).key;
   }
 
-  int getTraitValue(String trait) {
-    switch (trait.toLowerCase()) {
-      case 'order': return order;
-      case 'chaos': return chaos;
-      case 'heroism': return heroism;
-      case 'pragmatism': return pragmatism;
-      default: return 50;
+  /// Get trait value by name
+  int getTraitValue(String traitName) {
+    switch (traitName.toLowerCase()) {
+      case 'empathy':
+        return empathy;
+      case 'justice':
+        return justice;
+      case 'courage':
+        return courage;
+      case 'wisdom':
+        return wisdom;
+      case 'patience':
+        return patience;
+      default:
+        return 0;
     }
   }
 
-  String get dominantTrait {
-    final map = {
-      'ORDER': order,
-      'CHAOS': chaos,
-      'HEROISM': heroism,
-      'PRAGMATISM': pragmatism,
-    };
-    return map.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+  /// Get all traits as a map for the Wisdom Compass visualization
+  Map<String, int> toCompassMap() => {
+        'empathy': empathy,
+        'justice': justice,
+        'courage': courage,
+        'wisdom': wisdom,
+        'patience': patience,
+      };
+
+  UserTraits copyWith({
+    String? userId,
+    int? empathy,
+    int? justice,
+    int? courage,
+    int? wisdom,
+    int? patience,
+    List<TraitChange>? traitHistory,
+    DateTime? updatedAt,
+  }) {
+    return UserTraits(
+      userId: userId ?? this.userId,
+      empathy: empathy ?? this.empathy,
+      justice: justice ?? this.justice,
+      courage: courage ?? this.courage,
+      wisdom: wisdom ?? this.wisdom,
+      patience: patience ?? this.patience,
+      traitHistory: traitHistory ?? this.traitHistory,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
+
+  Map<String, dynamic> toJson() => _$UserTraitsToJson(this);
 }
 
-class TraitHistory {
-  final String traitName;
-  final int value;
-  final DateTime timestamp;
-
-  TraitHistory({
-    required this.traitName,
-    required this.value,
-    required this.timestamp,
+/// Records a single trait change for the Journey Map
+@JsonSerializable()
+class TraitChange {
+  const TraitChange({
+    required this.trait,
+    required this.delta,
+    required this.changedAt,
+    this.storyId,
+    this.choiceId,
   });
+
+  factory TraitChange.fromJson(Map<String, dynamic> json) =>
+      _$TraitChangeFromJson(json);
+  final String trait;
+  final int delta;
+
+  @JsonKey(name: 'story_id')
+  final String? storyId;
+
+  @JsonKey(name: 'choice_id')
+  final String? choiceId;
+
+  @JsonKey(name: 'changed_at')
+  final DateTime changedAt;
+  Map<String, dynamic> toJson() => _$TraitChangeToJson(this);
 }

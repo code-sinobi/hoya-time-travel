@@ -4,6 +4,18 @@ part 'profile.g.dart';
 
 @JsonSerializable()
 class Profile {
+  Profile({
+    required this.id,
+    this.username,
+    this.avatarUrl,
+    this.xp = 0,
+    this.level = 1,
+    this.subscriptionTier = 'free',
+    this.role = 'traveler',
+  });
+
+  factory Profile.fromJson(Map<String, dynamic> json) =>
+      _$ProfileFromJson(json);
   final String id;
   final String? username;
   @JsonKey(name: 'avatar_url')
@@ -11,15 +23,11 @@ class Profile {
   final int xp;
   final int level;
 
-  Profile({
-    required this.id,
-    this.username,
-    this.avatarUrl,
-    this.xp = 0,
-    this.level = 1,
-  });
+  @JsonKey(name: 'subscription_tier')
+  final String subscriptionTier;
+  @JsonKey(name: 'role')
+  final String role;
 
-  factory Profile.fromJson(Map<String, dynamic> json) =>
-      _$ProfileFromJson(json);
+  bool get isChronicler => role == 'chronicler' || role == 'admin';
   Map<String, dynamic> toJson() => _$ProfileToJson(this);
 }

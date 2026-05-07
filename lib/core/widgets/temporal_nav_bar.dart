@@ -35,7 +35,6 @@ class _TemporalNavBarState extends State<TemporalNavBar>
         borderRadius: BorderRadius.circular(40),
         border: Border.all(
           color: GalacticColors.etherealCyan.withValues(alpha: 0.5),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -134,16 +133,12 @@ class _TemporalNavBarState extends State<TemporalNavBar>
     switch (index) {
       case 0:
         context.go('/portal');
-        break;
       case 1:
         context.go('/library');
-        break;
       case 2:
         context.go('/rifts');
-        break;
       case 3:
         context.go('/profile');
-        break;
     }
 
     // Haptic feedback

@@ -1,9 +1,8 @@
 /// Base class for all application exceptions
 sealed class AppException implements Exception {
+  const AppException(this.message, [this.innerError]);
   final String message;
   final Object? innerError;
-
-  const AppException(this.message, [this.innerError]);
 
   @override
   String toString() =>

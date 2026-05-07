@@ -1,10 +1,10 @@
 // MythicCard Golden Test
 // Tests visual consistency of the MythicCard component
 
+import 'package:chrono_app/core/theme/era_theme.dart';
+import 'package:chrono_app/core/widgets/mythic_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hoya_app/core/widgets/mythic_card.dart';
-import 'package:hoya_app/core/theme/era_theme.dart';
 
 void main() {
   testWidgets('MythicCard renders correctly', (WidgetTester tester) async {

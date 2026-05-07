@@ -3,14 +3,13 @@ import '../theme/galactic_colors.dart';
 import 'star_field.dart';
 
 class GalacticBackground extends StatefulWidget {
-  final bool showStars;
-  final bool animated;
-
   const GalacticBackground({
     super.key,
     this.showStars = true,
     this.animated = true,
   });
+  final bool showStars;
+  final bool animated;
 
   @override
   State<GalacticBackground> createState() => _GalacticBackgroundState();
@@ -40,10 +39,9 @@ class _GalacticBackgroundState extends State<GalacticBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return Container(
+        return DecoratedBox(
           decoration: BoxDecoration(
             gradient: RadialGradient(
-              center: Alignment.center,
               radius: _pulse.value,
               colors: [
                 GalacticColors.wormholeBlue.withValues(alpha: 0.1),

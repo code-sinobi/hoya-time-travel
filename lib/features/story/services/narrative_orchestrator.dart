@@ -1,18 +1,18 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../data/story_library.dart';
+
 import '../../../core/ai/openrouter_service.dart';
 import '../../../core/ai/prompts.dart';
 import '../../../core/utils/logger.dart';
+import '../data/story_library.dart';
 
 class NarrativeOrchestrator {
+  NarrativeOrchestrator(this._ai, this._supabase);
   final OpenRouterService _ai;
   final SupabaseClient _supabase;
 
-  NarrativeOrchestrator(this._ai, this._supabase);
-
   /// Expand all stories in the library to 700+ words across multiple nodes
   Future<void> expandAllStories() async {
-    for (final meta in storyLibrary) {
+    for (final meta in fallbackStoryLibrary) {
       AppLogger.info('Expanding story: ${meta.title} (${meta.id})');
       await expandStory(meta);
     }
@@ -35,7 +35,7 @@ class NarrativeOrchestrator {
       try {
         AppLogger.info('Generating $sectionTitle for ${meta.title}...');
 
-        final prompt = HoyaPrompts.expansionPrompt(
+        final prompt = ChronoPrompts.expansionPrompt(
           title: meta.title,
           culture: meta.culture,
           era: meta.era,
@@ -56,7 +56,7 @@ class NarrativeOrchestrator {
           'type': _getNodeType(sectionTitle),
           'content': content.trim(),
         });
-      } catch (e) {
+      } on Object catch (e) {
         AppLogger.error(
           'Failed to generate $sectionTitle for ${meta.title}',
           error: e,

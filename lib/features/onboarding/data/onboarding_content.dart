@@ -3,12 +3,6 @@ import '../widgets/mythology_crawl.dart';
 
 /// Data model for onboarding page content
 class OnboardingPageData {
-  final String title;
-  final String description;
-  final IconData icon;
-  final String? lottieAsset;
-  final List<CrawlSection>? crawlSections;
-
   const OnboardingPageData({
     required this.title,
     required this.description,
@@ -16,6 +10,11 @@ class OnboardingPageData {
     this.lottieAsset,
     this.crawlSections,
   });
+  final String title;
+  final String description;
+  final IconData icon;
+  final String? lottieAsset;
+  final List<CrawlSection>? crawlSections;
 }
 
 /// Onboarding content for 3 pages

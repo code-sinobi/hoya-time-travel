@@ -1,42 +1,35 @@
-import 'package:flutter/material.dart';
-
-import 'core/utils/design_system_validator.dart';
 import 'dart:ui';
+
+import 'package:accessibility_tools/accessibility_tools.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'core/providers/shared_preferences_provider.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
-import 'core/providers/shared_preferences_provider.dart';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'core/utils/design_system_validator.dart';
+import 'core/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Try loading from .env file
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (e) {
-    debugPrint('No .env file found or error retrieving it: $e');
-  }
-
-  // Initialize Supabase if config is present
-  // Priority: 1. --dart-define (Environment), 2. .env file
-  String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
-  String supabaseKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
-
-  if (supabaseUrl.isEmpty && dotenv.isInitialized) {
-    supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-  }
-  if (supabaseKey.isEmpty && dotenv.isInitialized) {
-    supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-  }
+  // Load environment variables from .env file
+  await dotenv.load();
+  final String supabaseUrl = dotenv.env['SUPABASE_URL'] ??
+      const String.fromEnvironment('SUPABASE_URL');
+  final String supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ??
+      const String.fromEnvironment('SUPABASE_ANON_KEY');
 
   if (supabaseUrl.isNotEmpty && supabaseKey.isNotEmpty) {
     await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   } else {
-    debugPrint('Supabase not initialized: Missing keys');
+    AppLogger.error(
+      'Supabase not initialized: Missing SUPABASE_URL or SUPABASE_ANON_KEY',
+    );
   }
 
   // Initialize SharedPreferences
@@ -45,13 +38,13 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: const HoyaApp(),
+      child: const ChronoApp(),
     ),
   );
 }
 
-class HoyaApp extends ConsumerWidget {
-  const HoyaApp({super.key});
+class ChronoApp extends ConsumerWidget {
+  const ChronoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,28 +52,34 @@ class HoyaApp extends ConsumerWidget {
     final theme = ref.watch(appThemeProvider);
 
     return MaterialApp.router(
-      title: 'Hoya',
+      title: 'Chrono',
       theme: theme,
       routerConfig: router,
+      scrollBehavior: const AppScrollBehavior(),
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         // Run Design System Validation in Debug Mode
-        assert(() {
-          if (child != null) {
-            // We need a context to look up theme? No we have `theme` variable.
-            // But we need to ensure it runs only once or lazily?
-            // Calling it here is fine for now as it just prints warnings.
-            DesignSystemValidator.validateTheme(theme);
-          }
-          return true;
-        }());
+        assert(
+          () {
+            if (child != null) {
+              // We need a context to look up theme? No we have `theme` variable.
+              // But we need to ensure it runs only once or lazily?
+              // Calling it here is fine for now as it just prints warnings.
+              DesignSystemValidator.validateTheme(theme);
+            }
+            return true;
+          }(),
+          'Background effect parameter bounds check',
+        );
 
-        // return AccessibilityTools(
-        //   checkFontOverflows: true,
-        //   minimumTapAreas: MinimumTapAreas.material,
-        //   child: child ?? const SizedBox.shrink(),
-        // );
-        return child ?? const SizedBox.shrink();
+        Widget result = child ?? const SizedBox.shrink();
+        if (kDebugMode) {
+          result = AccessibilityTools(
+            checkFontOverflows: true,
+            child: result,
+          );
+        }
+        return result;
       },
     );
   }

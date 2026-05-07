@@ -21,10 +21,9 @@ class StarField extends StatelessWidget {
 }
 
 class StarPainter extends CustomPainter {
+  StarPainter({required this.width, required this.height});
   final double width;
   final double height;
-
-  StarPainter({required this.width, required this.height});
 
   @override
   void paint(Canvas canvas, Size size) {

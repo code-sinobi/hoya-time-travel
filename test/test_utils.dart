@@ -1,4 +1,4 @@
-// Test utilities for Hoya App tests
+// Test utilities for Chrono App tests
 // Provides common setup helpers for widget and integration tests
 
 import 'package:flutter/material.dart';

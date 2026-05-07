@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/era_theme.dart';
+import 'logger.dart';
 
 class DesignSystemValidator {
-  /// Validates that the current theme adhere's to Hoya's Mythic Design System.
+  /// Validates that the current theme adhere's to Chrono's Mythic Design System.
   /// This should be called in `main.dart` during debug mode.
   static void validateTheme(ThemeData theme) {
     // 1. Check Primary Color (Mythic Bronze)
     if (theme.primaryColor.toARGB32() != MythicColors.bronze.toARGB32()) {
-      debugPrint(
+      AppLogger.warning(
         '⚠️ DESIGN VIOLATION: Primary color must be Mythic Bronze (${MythicColors.bronze.toHex()}). Found: ${theme.primaryColor.toARGB32().toRadixString(16)}',
       );
     }
@@ -17,7 +19,7 @@ class DesignSystemValidator {
             MythicColors.voidBackground.toARGB32() &&
         theme.scaffoldBackgroundColor.toARGB32() !=
             MythicColors.deepIndigo.toARGB32()) {
-      debugPrint(
+      AppLogger.warning(
         '⚠️ DESIGN VIOLATION: Background must be Void or Deep Indigo.',
       );
     }
@@ -27,7 +29,7 @@ class DesignSystemValidator {
     // Note: GoogleFonts might return null or a specific family name.
     // We check if it contains "Cinzel" loosely or if it's null (default).
     if (headlineFont != null && !headlineFont.contains('Cinzel')) {
-      debugPrint(
+      AppLogger.warning(
         '⚠️ DESIGN VIOLATION: Headlines must use Cinzel font. Found: $headlineFont',
       );
     }

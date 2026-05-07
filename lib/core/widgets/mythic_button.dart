@@ -5,18 +5,17 @@ import '../theme/era_theme.dart';
 enum MythicButtonStyle { primary, secondary, danger }
 
 class MythicButton extends StatelessWidget {
+  const MythicButton({
+    required this.label,
+    required this.onTap,
+    super.key,
+    this.style = MythicButtonStyle.primary,
+    this.icon,
+  });
   final String label;
   final VoidCallback onTap;
   final MythicButtonStyle style;
   final IconData? icon;
-
-  const MythicButton({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.style = MythicButtonStyle.primary,
-    this.icon,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +28,14 @@ class MythicButton extends StatelessWidget {
         backgroundColor = MythicColors.bronze;
         textColor = Colors.black;
         borderColor = MythicColors.bronze;
-        break;
       case MythicButtonStyle.secondary:
         backgroundColor = Colors.transparent;
         textColor = MythicColors.parchment;
         borderColor = MythicColors.bronze.withValues(alpha: 0.5);
-        break;
       case MythicButtonStyle.danger:
         backgroundColor = MythicColors.error.withValues(alpha: 0.2);
         textColor = MythicColors.error;
         borderColor = MythicColors.error;
-        break;
     }
 
     return Material(

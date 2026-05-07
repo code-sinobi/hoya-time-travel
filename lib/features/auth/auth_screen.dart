@@ -1,21 +1,22 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
-import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:lottie/lottie.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
-import '../../core/router/routes.dart';
-import 'services/auth_service.dart';
-import '../../core/widgets/galactic_background.dart';
+import 'dart:async';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+
+import '../../core/errors/app_exceptions.dart';
+import '../../core/errors/error_handler.dart';
+import '../../core/router/routes.dart';
 import '../../core/theme/galactic_colors.dart';
-import '../../core/widgets/time_particles.dart';
+import '../../core/widgets/galactic_background.dart';
 import '../../core/widgets/glass_morphic_card.dart';
 import '../../core/widgets/sci_fi_text_field.dart';
-import '../../core/errors/error_handler.dart';
-import '../../core/errors/app_exceptions.dart';
+import 'services/auth_service.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -31,13 +32,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _usernameController = TextEditingController();
   bool _isEntryMode = true;
   bool _isLoading = false;
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
     super.dispose();
+  }
+
+  void _onFieldChanged(String value) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {}); // Trigger rebuild for password strength
+        _formKey.currentState?.validate();
+      }
+    });
   }
 
   Future<void> _submit() async {
@@ -71,7 +84,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           });
         }
       }
-    } on supabase.AuthApiException catch (e) {
+    } on supabase.AuthException catch (e) {
       if (mounted) {
         ref.read(errorHandlerProvider.notifier).handle(
               AuthException(
@@ -81,7 +94,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               context: context,
             );
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (mounted) {
         ref.read(errorHandlerProvider.notifier).handleGeneric(
               e,
@@ -102,10 +115,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       body: Stack(
         children: [
           // Enhanced Galactic Background is already good, we add Particles
-          const GalacticBackground(showStars: true),
-
-          // Time Particles
-          const Positioned.fill(child: TimeParticles(count: 40)),
+          const GalacticBackground(),
 
           Center(
             child: SingleChildScrollView(
@@ -176,7 +186,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   controller: _usernameController,
                                   label: 'CODENAME',
                                   prefixIcon: Icons.badge_outlined,
-                                  onChanged: (_) {},
+                                  onChanged: _onFieldChanged,
+                                  validator: (v) => !_isEntryMode &&
+                                          (v == null || v.length < 3)
+                                      ? 'CODENAME must be >= 3 chars'
+                                      : null,
                                 ),
                                 const SizedBox(height: 16),
                               ],
@@ -185,7 +199,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 controller: _emailController,
                                 label: 'TEMPORAL ID (EMAIL)',
                                 prefixIcon: Icons.alternate_email,
-                                onChanged: (_) {},
+                                onChanged: _onFieldChanged,
+                                validator: (v) => v == null || !v.contains('@')
+                                    ? 'Invalid TEMPORAL ID'
+                                    : null,
                               ),
                               const SizedBox(height: 16),
 
@@ -194,8 +211,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 label: 'CHRONO-KEY',
                                 prefixIcon: Icons.lock_outline,
                                 isPassword: true,
-                                onChanged: (_) {},
+                                onChanged: _onFieldChanged,
+                                validator: (v) => v == null || v.length < 6
+                                    ? 'CHRONO-KEY too weak'
+                                    : null,
                               ),
+                              if (!_isEntryMode)
+                                PasswordStrengthIndicator(
+                                  password: _passwordController.text,
+                                ),
 
                               const SizedBox(height: 32),
 
@@ -288,5 +312,79 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 }
 
-// Removed _PasswordStrengthIndicator as it should ideally be integrated into SciFiTextField or handled better visually
-// For now, removing to clean up the sci-fi look, or can be re-added if critically needed.
+class PasswordStrengthIndicator extends StatelessWidget {
+  const PasswordStrengthIndicator({required this.password, super.key});
+  final String password;
+
+  @override
+  Widget build(BuildContext context) {
+    int strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.contains(RegExp('[A-Z]'))) strength++;
+    if (password.contains(RegExp('[0-9]'))) strength++;
+    if (password.contains(RegExp('[^a-zA-Z0-9]'))) strength++;
+
+    Color color;
+    String text;
+    switch (strength) {
+      case 0:
+      case 1:
+        color = Colors.red;
+        text = 'WEAK';
+      case 2:
+      case 3:
+        color = Colors.orange;
+        text = 'GOOD';
+      case 4:
+        color = Colors.green;
+        text = 'STRONG';
+      default:
+        color = Colors.red;
+        text = 'WEAK';
+    }
+    if (password.isEmpty) {
+      color = Colors.transparent;
+      text = '';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0, bottom: 8.0, left: 4.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: List.generate(4, (index) {
+                return Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: password.isEmpty
+                          ? Colors.white12
+                          : (index <= (strength == 0 ? 0 : strength - 1)
+                              ? color
+                              : Colors.white12),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 50,
+            child: Text(
+              text,
+              style: GoogleFonts.orbitron(
+                fontSize: 10,
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

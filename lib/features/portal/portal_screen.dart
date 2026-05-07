@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../core/widgets/galactic_background.dart';
+import '../../core/router/routes.dart';
 import '../../core/theme/era_theme.dart';
-import '../story/data/story_library.dart';
+import '../../core/widgets/galactic_background.dart';
+import '../auth/models/profile.dart';
 import '../auth/services/profile_service.dart';
-
-import 'widgets/temporal_conduit.dart';
+import '../living_story/presentation/recommendation_controller.dart';
+import '../story/data/story_library.dart';
+import '../story/repositories/story_repository.dart';
 import 'widgets/mythic_slab_card.dart';
+import 'widgets/temporal_conduit.dart';
 
 class PortalScreen extends ConsumerStatefulWidget {
   const PortalScreen({super.key});
@@ -44,7 +48,13 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
 
   @override
   Widget build(BuildContext context) {
-    final profileAsync = ref.watch(userProfileProvider);
+    // Watch recommendations
+    final recommendationsAsync = ref.watch(recommendedStoriesProvider);
+    final profileAsync = ref.watch(userProfileProvider); // Add this
+    final recommendedIds = recommendationsAsync.maybeWhen(
+      data: (list) => list.map((r) => r.story.id).toSet(),
+      orElse: () => <String>{},
+    );
 
     return Scaffold(
       backgroundColor: MythicColors.voidBackground,
@@ -52,7 +62,7 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
         fit: StackFit.expand,
         children: [
           // LAYER 1: Deep Space Background
-          const GalacticBackground(showStars: true),
+          const GalacticBackground(),
 
           // LAYER 2: Temporal Conduit (The Core) - moved slightly up
           Positioned(
@@ -70,17 +80,67 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
               // TOP HUD
               _buildMythicHUD(profileAsync),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+
+              // Recommendation Label (if any)
+              if (recommendationsAsync.isLoading)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    width: 200,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: MythicColors.bronze.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  )
+                      .animate(onPlay: (controller) => controller.repeat())
+                      .shimmer(
+                        duration: 1500.ms,
+                        color: MythicColors.bronze.withValues(alpha: 0.5),
+                      ),
+                )
+              else if (recommendationsAsync.hasValue &&
+                  recommendationsAsync.value!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome,
+                        color: MythicColors.bronze,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'PATH OF BALANCE REVEALED',
+                        style: GoogleFonts.cinzel(
+                          color: MythicColors.bronze,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).animate().fadeIn(),
+                    ],
+                  ),
+                ),
+
+              const SizedBox(height: 10),
 
               // FEATURED CAROUSEL (3D Time Rift Effect)
               Expanded(
-                flex: 1, // Fill available space
                 child: PageView.builder(
                   controller: _pageController,
                   onPageChanged: (idx) => setState(() => _currentPage = idx),
-                  itemCount: storyLibrary.length,
+                  itemCount: ref.watch(storyLibraryProvider).length,
                   itemBuilder: (context, index) {
-                    final story = storyLibrary[index];
+                    final story = ref.watch(storyLibraryProvider)[index];
+                    final isRecommended = recommendedIds.contains(story.id);
+
+                    final profile = profileAsync.value;
+                    final isPatron = profile?.subscriptionTier == 'patron' ||
+                        profile?.subscriptionTier == 'oracle';
+                    final isLocked = story.isPremium && !isPatron;
+
                     return AnimatedBuilder(
                       animation: _pageController,
                       builder: (context, child) {
@@ -107,8 +167,6 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
                         }
 
                         // 3D Tilt & Parallax Effect
-                        // Removed Center/SizedBox constraint to let PageView control main size
-                        // AspectRatio 5:4 applied here
                         return Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -126,18 +184,108 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
                                 ..multiply(
                                   Matrix4.diagonal3Values(scale, scale, 1.0),
                                 ),
-                              child: Opacity(
-                                opacity: opacity.clamp(0.4, 1.0),
+                              child: ColorFiltered(
+                                colorFilter: ColorFilter.matrix([
+                                  1, 0, 0, 0, 0,
+                                  0, 1, 0, 0, 0,
+                                  0, 0, 1, 0, 0,
+                                  0, 0, 0, opacity.clamp(0.4, 1.0), 0,
+                                ]),
                                 child: child,
                               ),
                             ),
                           ),
                         );
                       },
-                      child: MythicSlabCard(
-                        story: story,
-                        isLocked: false,
-                        onTap: () => context.push('/story/${story.id}'),
+                      child: Stack(
+                        children: [
+                          MythicSlabCard(
+                            story: story,
+                            isLocked: isLocked,
+                            onTap: () {
+                              if (isLocked) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'This story requires Patron status.',
+                                      style: GoogleFonts.cinzel(),
+                                    ),
+                                    action: SnackBarAction(
+                                      label: 'UPGRADE',
+                                      textColor: MythicColors.bronze,
+                                      onPressed: () {
+                                        context.go(AppRoutes.profile);
+                                      },
+                                    ),
+                                    backgroundColor: const Color(0xFF1E1E2C),
+                                  ),
+                                );
+                              } else {
+                                context.push('/story/${story.id}/intro');
+                              }
+                            },
+                          ),
+                          if (isRecommended)
+                            Positioned(
+                              top: 10,
+                              right: 10,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: MythicColors.bronze,
+                                  borderRadius: BorderRadius.circular(4),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      blurRadius: 8,
+                                      color: MythicColors.bronze,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  'RECOMMENDED',
+                                  style: GoogleFonts.cinzel(
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ).animate().shimmer(
+                                    duration: 2.seconds,
+                                    delay: 1.seconds,
+                                  ),
+                            ),
+                          if (isLocked)
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.lock,
+                                      color: MythicColors.bronze,
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'PATRON ONLY',
+                                      style: GoogleFonts.cinzel(
+                                        color: MythicColors.bronze,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
@@ -150,7 +298,7 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
     );
   }
 
-  Widget _buildMythicHUD(AsyncValue profileAsync) {
+  Widget _buildMythicHUD(AsyncValue<Profile?> profileAsync) {
     return Container(
       margin: const EdgeInsets.only(top: 50, left: 20, right: 20),
       child: Row(
@@ -175,7 +323,7 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
                   color: MythicColors.parchment,
                   fontWeight: FontWeight.bold,
                   shadows: [
-                    const BoxShadow(color: Colors.black, blurRadius: 10),
+                    const BoxShadow(blurRadius: 10),
                   ],
                 ),
               ),
@@ -186,59 +334,75 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
           Stack(
             alignment: Alignment.center,
             children: [
-              // Completion Ring (Static 60% for now)
+              // Completion Ring (Wired to Real Progress)
               SizedBox(
                 width: 58,
                 height: 58,
-                child: CircularProgressIndicator(
-                  value: 0.6, // Mocked 60% completion
-                  strokeWidth: 2,
-                  color: MythicColors.bronze,
-                  backgroundColor: MythicColors.bronze.withValues(alpha: 0.2),
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final progressList =
+                        ref.watch(allUserProgressProvider).value ?? [];
+                    final completedCount =
+                        progressList.where((p) => p.isCompleted).length;
+                    final totalStories = ref.watch(storyLibraryProvider).length;
+                    final double completionPercentage =
+                        totalStories > 0 ? completedCount / totalStories : 0.0;
+
+                    return CircularProgressIndicator(
+                      value: completionPercentage,
+                      strokeWidth: 2,
+                      color: MythicColors.bronze,
+                      backgroundColor:
+                          MythicColors.bronze.withValues(alpha: 0.2),
+                    );
+                  },
                 ),
               ),
 
-              // Detailed Avatar Container
-              GestureDetector(
-                onTap: () {
-                  // Navigate to Profile with Hero transition (Phase 2)
-                },
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: MythicColors.deepIndigo,
-                    border: Border.all(color: MythicColors.bronze, width: 2),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black45, blurRadius: 8),
-                    ],
-                  ),
-                  child: Center(
-                    child: profileAsync.when(
-                      data: (profile) {
-                        final initial = (profile?.username ?? 'T')
-                            .substring(0, 1)
-                            .toUpperCase();
-                        if (profile?.avatarUrl != null &&
-                            profile!.avatarUrl!.isNotEmpty) {
-                          return ClipOval(
-                            child: Image.network(
-                              profile.avatarUrl!,
-                              fit: BoxFit.cover,
-                              width: 50,
-                              height: 50,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  _buildInitial(initial),
-                            ),
-                          );
-                        }
-                        return _buildInitial(initial);
-                      },
-                      loading: () =>
-                          const CircularProgressIndicator(strokeWidth: 2),
-                      error: (context, error) =>
-                          const Icon(Icons.error, color: Colors.red, size: 20),
+              Semantics(
+                label: 'User Profile',
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    // Navigate to Profile with Hero transition (Phase 2)
+                  },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: MythicColors.deepIndigo,
+                      border: Border.all(color: MythicColors.bronze, width: 2),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black45, blurRadius: 8),
+                      ],
+                    ),
+                    child: Center(
+                      child: profileAsync.when(
+                        data: (profile) {
+                          final initial = (profile?.username ?? 'T')
+                              .substring(0, 1)
+                              .toUpperCase();
+                          if (profile?.avatarUrl != null &&
+                              profile!.avatarUrl!.isNotEmpty) {
+                            return ClipOval(
+                              child: Image.network(
+                                profile.avatarUrl!,
+                                fit: BoxFit.cover,
+                                width: 50,
+                                height: 50,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    _buildInitial(initial),
+                              ),
+                            );
+                          }
+                          return _buildInitial(initial);
+                        },
+                        loading: () =>
+                            const CircularProgressIndicator(strokeWidth: 2),
+                        error: (context, error) =>
+                            const Icon(Icons.error, color: Colors.red, size: 20),
+                      ),
                     ),
                   ),
                 ),

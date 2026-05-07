@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'models/story_models.dart';
-import '../living_story/presentation/living_story_controller.dart';
 
-import 'widgets/story_view.dart';
-import 'widgets/resource_header.dart';
 import '../../core/theme/era_theme.dart';
+import '../living_story/presentation/living_story_controller.dart';
+import 'data/story_library.dart';
+import 'models/story_models.dart';
+import 'widgets/resource_header.dart';
+import 'widgets/story_view.dart';
 
 class StoryScreen extends ConsumerStatefulWidget {
+  const StoryScreen({required this.storyId, super.key});
   final String storyId;
-  const StoryScreen({super.key, required this.storyId});
 
   @override
   ConsumerState<StoryScreen> createState() => _StoryScreenState();
@@ -35,11 +36,22 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     // Watch the living story state
     final storyState = ref.watch(livingStoryControllerProvider);
 
+    // Get story title from library
+    final currentStoryId = storyState.session?.storyId ?? widget.storyId;
+    final storyTitle = ref
+        .watch(storyLibraryProvider)
+        .firstWhere(
+          (s) => s.id == currentStoryId,
+          orElse: () =>
+              ref.watch(storyLibraryProvider).first, // Fallback safely
+        )
+        .title;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          storyState.session?.storyId ?? 'Story',
+          storyTitle,
           style: theme.headlineStyle.copyWith(fontSize: 20),
         ),
         backgroundColor: theme.backgroundColor.withValues(alpha: 0.8),
@@ -90,7 +102,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     if (state.currentNode != null) {
       return StoryView(
         node: state.currentNode!,
-        onChoiceSelected: (choice) => _handleChoice(ref, choice),
+        onChoiceSelected: _handleChoice,
       );
     }
 
@@ -113,7 +125,7 @@ class _StoryScreenState extends ConsumerState<StoryScreen> {
     );
   }
 
-  void _handleChoice(WidgetRef ref, StoryChoice choice) {
+  void _handleChoice(StoryChoice choice) {
     ref.read(livingStoryControllerProvider.notifier).makeChoice(choice);
   }
 }

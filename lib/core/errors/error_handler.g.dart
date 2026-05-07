@@ -14,7 +14,7 @@ String _$errorHandlerHash() => r'574345871362832e27b15d51244c2c7210f6ca17';
 /// ```dart
 /// try {
 ///   await someOperation();
-/// } catch (e) {
+/// } on Object catch (e) {
 ///   ref.read(errorHandlerProvider).handle(
 ///     AuthException('Entry failed', e),
 ///     context: context,

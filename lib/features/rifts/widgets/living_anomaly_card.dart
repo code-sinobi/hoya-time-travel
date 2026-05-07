@@ -14,20 +14,19 @@ import 'destabilization_bar.dart';
 /// Enhanced anomaly card with living animations, countdown timers,
 /// story snippets, and cascade connections.
 class LivingAnomalyCard extends StatefulWidget {
-  final Anomaly anomaly;
-  final VoidCallback? onPurge;
-  final VoidCallback? onStabilize;
-  final bool showCascadeIndicator;
-  final int cascadeCount;
-
   const LivingAnomalyCard({
-    super.key,
     required this.anomaly,
+    super.key,
     this.onPurge,
     this.onStabilize,
     this.showCascadeIndicator = false,
     this.cascadeCount = 0,
   });
+  final Anomaly anomaly;
+  final VoidCallback? onPurge;
+  final VoidCallback? onStabilize;
+  final bool showCascadeIndicator;
+  final int cascadeCount;
 
   @override
   State<LivingAnomalyCard> createState() => _LivingAnomalyCardState();
@@ -106,7 +105,7 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
 
   @override
   Widget build(BuildContext context) {
-    Widget card = Container(
+    Widget card = DecoratedBox(
       decoration: BoxDecoration(
         color: _baseColor.withValues(alpha: 0.9),
         border: Border.all(
@@ -198,17 +197,20 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
 
     return Dismissible(
       key: Key(widget.anomaly.id),
-      direction: DismissDirection.horizontal,
       confirmDismiss: (direction) async {
-        HapticFeedback.mediumImpact();
+        unawaited(HapticFeedback.mediumImpact());
         if (direction == DismissDirection.startToEnd) {
+          // Swipe Stabilize not allowed if minigame exists?
+          // Let's keep swipe as "Quick Stabilize" (maybe cost more?)
+          // or disable it to force minigame.
+          // Let's disable Swipe Stabilize in favor of button mechanics for gamification
           return false;
         } else {
           widget.onPurge?.call();
         }
         return false;
       },
-      background: _buildSwipeBackground(isStabilize: true),
+      background: _buildSwipeBackground(isStabilize: true), // Hidden behavior
       secondaryBackground: _buildSwipeBackground(isStabilize: false),
       child: card,
     );
@@ -327,24 +329,26 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
     );
   }
 
-  void _startStabilizing() async {
-    HapticFeedback.lightImpact();
+  Future<void> _startStabilizing() async {
+    unawaited(HapticFeedback.lightImpact());
     setState(() {
       _isStabilizing = true;
       _stabilizeProgress = 0.0;
     });
 
+    // Game loop
     while (_isStabilizing && _stabilizeProgress < 1.0) {
-      await Future.delayed(const Duration(milliseconds: 16));
+      await Future<void>.delayed(const Duration(milliseconds: 16));
       if (!_isStabilizing) break;
 
       setState(() {
-        _stabilizeProgress += 0.015;
+        _stabilizeProgress += 0.015; // Speed of fill
       });
 
+      // Haptic tick when entering zone
       if (_stabilizeProgress >= _targetMin &&
           _stabilizeProgress - 0.015 < _targetMin) {
-        HapticFeedback.mediumImpact();
+        unawaited(HapticFeedback.mediumImpact());
       }
     }
   }
@@ -353,9 +357,11 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
     setState(() => _isStabilizing = false);
 
     if (_stabilizeProgress >= _targetMin && _stabilizeProgress <= _targetMax) {
+      // Success!
       HapticFeedback.heavyImpact();
       widget.onStabilize?.call();
     } else {
+      // Failed
       HapticFeedback.vibrate();
       setState(() => _stabilizeProgress = 0.0);
     }
@@ -363,16 +369,21 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
 
   Color _getProgressBarColor() {
     if (_stabilizeProgress >= _targetMin && _stabilizeProgress <= _targetMax) {
-      return const Color(0xFF00FF00).withValues(alpha: 0.5);
+      return const Color(0xFF00FF00).withValues(alpha: 0.5); // Sweet spot
     } else if (_stabilizeProgress > _targetMax) {
-      return const Color(0xFFFF0000).withValues(alpha: 0.5);
+      return const Color(0xFFFF0000).withValues(alpha: 0.5); // Overload
     }
     return _borderColor.withValues(alpha: 0.5);
   }
 
+  // ... (Keep existing helpers: _buildHeader, _buildCascadeIndicator, _buildSwipeBackground, _wrapWithBreathingGlow)
+  // Re-implementing them briefly to ensure closure of file correctly
+
   Widget _buildHeader() {
+    // ... same code as before ...
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      // ...
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -445,7 +456,7 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
   Widget _wrapWithBreathingGlow(Widget child) {
     return child.animate(onPlay: (c) => c.repeat(reverse: true)).custom(
           duration: const Duration(seconds: 2),
-          builder: (context, value, child) => Container(
+          builder: (context, value, child) => DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
@@ -462,15 +473,14 @@ class _LivingAnomalyCardState extends State<LivingAnomalyCard>
 }
 
 class _GlitchText extends StatefulWidget {
-  final String text;
-  final TextStyle style;
-  final bool enabled;
-
   const _GlitchText({
     required this.text,
     required this.style,
     this.enabled = false,
   });
+  final String text;
+  final TextStyle style;
+  final bool enabled;
 
   @override
   State<_GlitchText> createState() => _GlitchTextState();
@@ -479,7 +489,7 @@ class _GlitchText extends StatefulWidget {
 class _GlitchTextState extends State<_GlitchText> {
   String _displayText = '';
   Timer? _glitchTimer;
-  final _chars = '!@#\$%^&*<>?[]{}/\\|+=~-_';
+  final _chars = r'!@#$%^&*<>?[]{}/\|+=~-_';
   final _random = math.Random();
 
   @override
@@ -514,15 +524,17 @@ class _GlitchTextState extends State<_GlitchText> {
   }
 
   void _startGlitchLoop() {
+    // Random glitch every 2-5 seconds
     _glitchTimer = Timer.periodic(
       Duration(milliseconds: 2000 + _random.nextInt(3000)),
       (_) => _triggerGlitch(),
     );
   }
 
-  void _triggerGlitch() async {
+  Future<void> _triggerGlitch() async {
     if (!mounted) return;
 
+    // Glitch for 200ms
     for (int i = 0; i < 5; i++) {
       if (!mounted) return;
       setState(() {
@@ -534,7 +546,7 @@ class _GlitchTextState extends State<_GlitchText> {
           }),
         );
       });
-      await Future.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
     }
 
     if (mounted) {

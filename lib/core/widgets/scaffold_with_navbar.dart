@@ -1,16 +1,16 @@
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Scaffold with 5-tab bottom navigation bar for the main app shell
 class ScaffoldWithNavBar extends ConsumerWidget {
-  final Widget child;
-
   const ScaffoldWithNavBar({required this.child, super.key});
+  final Widget child;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,7 +27,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     final String location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/portal')) return 0;
     if (location.startsWith('/library')) return 1;
-    if (location.startsWith('/explore')) return 2;
+    if (location.startsWith('/community')) return 2;
     if (location.startsWith('/rifts')) return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
@@ -37,28 +37,22 @@ class ScaffoldWithNavBar extends ConsumerWidget {
     switch (index) {
       case 0:
         context.go('/portal');
-        break;
       case 1:
         context.go('/library');
-        break;
       case 2:
-        context.go('/explore');
-        break;
+        context.go('/community');
       case 3:
         context.go('/rifts');
-        break;
       case 4:
         context.go('/profile');
-        break;
     }
   }
 }
 
 class _MythicNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final Function(int) onTap;
-
   const _MythicNavBar({required this.selectedIndex, required this.onTap});
+  final int selectedIndex;
+  final void Function(int) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +68,6 @@ class _MythicNavBar extends StatelessWidget {
         border: const Border(
           top: BorderSide(
             color: Color(0x33D4A574),
-            width: 1,
           ), // Bronze 20% opacity
         ),
         boxShadow: [
@@ -108,9 +101,9 @@ class _MythicNavBar extends StatelessWidget {
                 onTap: () => onTap(1),
               ),
               _NavBarItem(
-                icon: Icons.explore_outlined,
-                filledIcon: Icons.explore,
-                label: 'NAVIGATOR',
+                icon: Icons.groups_outlined,
+                filledIcon: Icons.groups,
+                label: 'LORE',
                 isSelected: selectedIndex == 2,
                 onTap: () => onTap(2),
               ),
@@ -137,12 +130,6 @@ class _MythicNavBar extends StatelessWidget {
 }
 
 class _NavBarItem extends StatelessWidget {
-  final IconData icon;
-  final IconData filledIcon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
   const _NavBarItem({
     required this.icon,
     required this.filledIcon,
@@ -150,6 +137,11 @@ class _NavBarItem extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
   });
+  final IconData icon;
+  final IconData filledIcon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -162,52 +154,52 @@ class _NavBarItem extends StatelessWidget {
         onTap();
       },
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: bronze.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20), // Pill shape
-                    border: Border.all(color: bronze.withValues(alpha: 0.3)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: bronze.withValues(alpha: 0.15),
-                        blurRadius: 15,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  )
-                : null,
-            child:
-                Icon(
-                      isSelected ? filledIcon : icon,
-                      color: isSelected ? bronze : inactiveColor,
-                      size: 24,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: isSelected
+                  ? BoxDecoration(
+                      color: bronze.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20), // Pill shape
+                      border: Border.all(color: bronze.withValues(alpha: 0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: bronze.withValues(alpha: 0.15),
+                          blurRadius: 15,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     )
-                    .animate(target: isSelected ? 1 : 0)
-                    .scale(
-                      begin: const Offset(1, 1),
-                      end: const Offset(1.1, 1.1),
-                      duration: 200.ms,
-                    ),
-          ),
-          if (isSelected)
-            // Active state handled by pill background
-            const SizedBox(height: 4),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.orbitron(
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? bronze : inactiveColor,
-              letterSpacing: 0.8,
+                  : null,
+              child: Icon(
+                isSelected ? filledIcon : icon,
+                color: isSelected ? bronze : inactiveColor,
+                size: 24,
+              ).animate(target: isSelected ? 1 : 0).scale(
+                    begin: const Offset(1, 1),
+                    end: const Offset(1.1, 1.1),
+                    duration: 200.ms,
+                  ),
             ),
-          ),
-        ],
+            if (isSelected)
+              // Active state handled by pill background
+              const SizedBox(height: 4),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.orbitron(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? bronze : inactiveColor,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

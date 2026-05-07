@@ -31,12 +31,11 @@ class UserProfile extends _$UserProfile {
     try {
       await Supabase.instance.client
           .from('profiles')
-          .update({'username': newName})
-          .eq('id', current.id);
+          .update({'username': newName}).eq('id', current.id);
 
       // Refresh state
       ref.invalidateSelf();
-    } catch (e) {
+    } on Object catch (e) {
       // Re-throw or handle error
       throw Exception('Failed to update username: $e');
     }
@@ -50,16 +49,35 @@ class UserProfile extends _$UserProfile {
     // Simple level up logic: level = (xp / 100) + 1
     final newLevel = (newXp / 100).floor() + 1;
 
-    await Supabase.instance.client
-        .from('profiles')
-        .update({
-          'xp': newXp,
-          'level': newLevel,
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', current.id);
+    await Supabase.instance.client.from('profiles').update({
+      'xp': newXp,
+      'level': newLevel,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', current.id);
 
     // Refresh state
+    ref.invalidateSelf();
+  }
+
+  Future<void> upgradeSubscription() async {
+    final current = state.value;
+    if (current == null) return;
+
+    await Supabase.instance.client
+        .from('profiles')
+        .update({'subscription_tier': 'patron'}).eq('id', current.id);
+
+    ref.invalidateSelf();
+  }
+
+  Future<void> becomeChronicler() async {
+    final current = state.value;
+    if (current == null) return;
+
+    await Supabase.instance.client
+        .from('profiles')
+        .update({'role': 'chronicler'}).eq('id', current.id);
+
     ref.invalidateSelf();
   }
 }

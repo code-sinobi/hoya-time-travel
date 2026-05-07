@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_print
-// Vocabulary Scanner for Hoya App (v2 - Smart Filtering)
+// Vocabulary Scanner for Chrono App (v2 - Smart Filtering)
 // Detects sci-fi terms in USER-FACING content only.
 // Ignores: generated files, code identifiers, technical exception handling.
 // Run with: dart run scripts/vocabulary_scanner.dart
@@ -43,13 +43,13 @@ bool shouldExclude(String path) {
   if (path.endsWith('.freezed.dart')) return true;
 
   // Skip test files
-  if (path.contains('test\\') || path.contains('test/')) return true;
+  if (path.contains(r'test\') || path.contains('test/')) return true;
 
   // Skip scripts
-  if (path.contains('scripts\\') || path.contains('scripts/')) return true;
+  if (path.contains(r'scripts\') || path.contains('scripts/')) return true;
 
   // Skip asset directories - internal filenames don't need vocabulary checks
-  if (path.contains('assets\\') || path.contains('assets/')) return true;
+  if (path.contains(r'assets\') || path.contains('assets/')) return true;
 
   return false;
 }
@@ -126,13 +126,13 @@ Future<List<String>> scanFile(File file) async {
 }
 
 void main() async {
-  print('🔍 Hoya Vocabulary Scanner v2 (Smart Filtering)');
+  print('🔍 Chrono Vocabulary Scanner v2 (Smart Filtering)');
   print('=' * 50);
   print('Scanning for sci-fi terms in UI-facing content...\n');
   print('Note: Ignoring generated files (.g.dart), code identifiers,');
   print('      and technical terms (Error, User, Profile in code).\n');
 
-  final libPath = 'lib';
+  const libPath = 'lib';
   final files = await getSourceFiles(libPath);
 
   print('Scanning ${files.length} Dart files...\n');

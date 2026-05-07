@@ -3,20 +3,21 @@ import 'package:google_fonts/google_fonts.dart';
 import '../theme/galactic_colors.dart';
 
 class SciFiTextField extends StatefulWidget {
+  const SciFiTextField({
+    required this.label,
+    required this.prefixIcon,
+    super.key,
+    this.isPassword = false,
+    this.onChanged,
+    this.controller,
+    this.validator,
+  });
   final String label;
   final IconData prefixIcon;
   final bool isPassword;
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller; // Added controller support
-
-  const SciFiTextField({
-    super.key,
-    required this.label,
-    required this.prefixIcon,
-    this.isPassword = false,
-    this.onChanged,
-    this.controller,
-  });
+  final String? Function(String?)? validator;
 
   @override
   State<SciFiTextField> createState() => _SciFiTextFieldState();
@@ -30,7 +31,7 @@ class _SciFiTextFieldState extends State<SciFiTextField> {
     return FocusScope(
       child: Focus(
         onFocusChange: (focus) => setState(() => _isFocused = focus),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             color: GalacticColors.deepNebula.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
@@ -38,7 +39,6 @@ class _SciFiTextFieldState extends State<SciFiTextField> {
               color: _isFocused
                   ? GalacticColors.etherealCyan
                   : GalacticColors.wormholeBlue.withValues(alpha: 0.5),
-              width: 1,
             ),
             boxShadow: _isFocused
                 ? [
@@ -54,20 +54,19 @@ class _SciFiTextFieldState extends State<SciFiTextField> {
             controller: widget.controller,
             obscureText: widget.isPassword,
             onChanged: widget.onChanged,
+            validator: widget.validator,
             style: GoogleFonts.exo2(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(
               labelText: widget.label,
               labelStyle: GoogleFonts.orbitron(
-                color: _isFocused
-                    ? GalacticColors.etherealCyan
-                    : Colors.white54,
+                color:
+                    _isFocused ? GalacticColors.etherealCyan : Colors.white54,
                 fontSize: 12,
               ),
               prefixIcon: Icon(
                 widget.prefixIcon,
-                color: _isFocused
-                    ? GalacticColors.etherealCyan
-                    : Colors.white54,
+                color:
+                    _isFocused ? GalacticColors.etherealCyan : Colors.white54,
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(

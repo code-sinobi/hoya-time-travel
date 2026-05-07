@@ -1,15 +1,15 @@
+import 'package:chrono_app/core/theme/era_theme.dart';
+import 'package:chrono_app/core/widgets/mythic_button.dart';
+import 'package:chrono_app/core/widgets/mythic_card.dart';
 import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
-import 'package:hoya_app/core/theme/era_theme.dart';
-import 'package:hoya_app/core/widgets/mythic_button.dart';
-import 'package:hoya_app/core/widgets/mythic_card.dart';
 
 void main() {
-  runApp(const HoyaWidgetbook());
+  runApp(const ChronoWidgetbook());
 }
 
-class HoyaWidgetbook extends StatelessWidget {
-  const HoyaWidgetbook({super.key});
+class ChronoWidgetbook extends StatelessWidget {
+  const ChronoWidgetbook({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,6 @@ class HoyaWidgetbook extends StatelessWidget {
                     child: MythicButton(
                       label: 'Primary Action',
                       onTap: () {},
-                      style: MythicButtonStyle.primary,
                     ),
                   ),
                 ),

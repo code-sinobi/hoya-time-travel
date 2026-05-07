@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 
 /// Dot indicator for page position
 class PageIndicator extends StatelessWidget {
-  final int currentPage;
-  final int pageCount;
-  final Color activeColor;
-  final Color inactiveColor;
-
   const PageIndicator({
-    super.key,
     required this.currentPage,
     required this.pageCount,
     required this.activeColor,
     required this.inactiveColor,
+    super.key,
   });
+  final int currentPage;
+  final int pageCount;
+  final Color activeColor;
+  final Color inactiveColor;
 
   @override
   Widget build(BuildContext context) {

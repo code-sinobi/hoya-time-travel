@@ -7,9 +7,8 @@ import 'mythology_crawl.dart';
 
 /// Reusable onboarding page with cinematic text crawl
 class OnboardingPage extends StatelessWidget {
+  const OnboardingPage({required this.data, super.key});
   final OnboardingPageData data;
-
-  const OnboardingPage({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +22,16 @@ class OnboardingPage extends StatelessWidget {
             top: 60,
             left: 0,
             right: 0,
-            child:
-                SizedBox(
-                      height: 200,
-                      child: Lottie.asset(
-                        data.lottieAsset!,
-                        fit: BoxFit.contain,
-                      ),
-                    )
-                    .animate()
-                    .scale(duration: 800.ms, curve: Curves.elasticOut)
-                    .fadeIn(duration: 600.ms),
+            child: SizedBox(
+              height: 200,
+              child: Lottie.asset(
+                data.lottieAsset!,
+                fit: BoxFit.contain,
+              ),
+            )
+                .animate()
+                .scale(duration: 800.ms, curve: Curves.elasticOut)
+                .fadeIn(duration: 600.ms),
           ),
 
         // Cinematic crawl text in middle
@@ -46,7 +44,6 @@ class OnboardingPage extends StatelessWidget {
             child: MythologyCrawl(
               sections: data.crawlSections!,
               crawlDuration: const Duration(seconds: 22),
-              enableParallax: true,
             ),
           )
         else
@@ -60,10 +57,10 @@ class OnboardingPage extends StatelessWidget {
                   children: [
                     const SizedBox(height: 280),
                     Text(
-                          data.title,
-                          style: theme.headlineStyle.copyWith(fontSize: 32),
-                          textAlign: TextAlign.center,
-                        )
+                      data.title,
+                      style: theme.headlineStyle.copyWith(fontSize: 32),
+                      textAlign: TextAlign.center,
+                    )
                         .animate()
                         .fadeIn(delay: 200.ms, duration: 600.ms)
                         .slideY(begin: 0.3, end: 0, duration: 600.ms),

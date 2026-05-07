@@ -5,14 +5,13 @@ import '../../../core/theme/era_theme.dart';
 import '../models/story_models.dart';
 
 class StoryView extends ConsumerStatefulWidget {
-  final StoryNode node;
-  final Function(StoryChoice) onChoiceSelected;
-
   const StoryView({
-    super.key,
     required this.node,
     required this.onChoiceSelected,
+    super.key,
   });
+  final StoryNode node;
+  final void Function(StoryChoice) onChoiceSelected;
 
   @override
   ConsumerState<StoryView> createState() => _StoryViewState();
@@ -58,17 +57,16 @@ class _StoryViewState extends ConsumerState<StoryView> {
                       ],
                     ),
                     child: SingleChildScrollView(
-                      child:
-                          Text(
-                                widget.node.content,
-                                style: theme.bodyStyle.copyWith(height: 1.6),
-                              )
-                              .animate(
-                                onComplete: (controller) =>
-                                    setState(() => _showChoices = true),
-                              )
-                              .fadeIn(duration: 500.ms)
-                              .moveY(begin: 10, end: 0),
+                      child: Text(
+                        widget.node.content,
+                        style: theme.bodyStyle.copyWith(height: 1.6),
+                      )
+                          .animate(
+                            onComplete: (controller) =>
+                                setState(() => _showChoices = true),
+                          )
+                          .fadeIn(duration: 500.ms)
+                          .moveY(begin: 10, end: 0),
                     ),
                   ),
                 ),
@@ -77,7 +75,6 @@ class _StoryViewState extends ConsumerState<StoryView> {
               // Choices Area
               if (widget.node.choices.isNotEmpty)
                 Expanded(
-                  flex: 1,
                   child: AnimatedOpacity(
                     opacity: _showChoices ? 1.0 : 0.0,
                     duration: 500.ms,
@@ -109,17 +106,16 @@ class _StoryViewState extends ConsumerState<StoryView> {
 }
 
 class _ChoiceCard extends StatelessWidget {
-  final StoryChoice choice;
-  final EraTheme theme;
-  final VoidCallback onTap;
-  final int index;
-
   const _ChoiceCard({
     required this.choice,
     required this.theme,
     required this.onTap,
     required this.index,
   });
+  final StoryChoice choice;
+  final EraTheme theme;
+  final VoidCallback onTap;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +154,43 @@ class _ChoiceCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Text(
-                  choice.text,
-                  style: theme.bodyStyle.copyWith(fontWeight: FontWeight.bold),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      choice.text,
+                      style:
+                          theme.bodyStyle.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    if (choice.teCost > 0 ||
+                        choice.ciReward > 0 ||
+                        choice.ciCost > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            if (choice.teCost > 0)
+                              _CostBadge(
+                                label: '-${choice.teCost} Energy',
+                                color: Colors.amber,
+                                theme: theme,
+                              ),
+                            if (choice.ciCost > 0)
+                              _CostBadge(
+                                label: '-${choice.ciCost} Insight',
+                                color: Colors.purple,
+                                theme: theme,
+                              ),
+                            if (choice.ciReward > 0)
+                              _CostBadge(
+                                label: '+${choice.ciReward} Insight',
+                                color: Colors.purpleAccent,
+                                theme: theme,
+                              ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -168,5 +198,37 @@ class _ChoiceCard extends StatelessWidget {
         ),
       ),
     ).animate().fadeIn(delay: (index * 200).ms).slideX(begin: 0.1, end: 0);
+  }
+}
+
+class _CostBadge extends StatelessWidget {
+  const _CostBadge({
+    required this.label,
+    required this.color,
+    required this.theme,
+  });
+  final String label;
+  final Color color;
+  final EraTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Text(
+        label,
+        style: theme.captionStyle.copyWith(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 }

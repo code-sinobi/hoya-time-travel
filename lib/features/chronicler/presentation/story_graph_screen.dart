@@ -14,14 +14,13 @@ final storyNodesProvider =
 });
 
 class StoryGraphScreen extends ConsumerWidget {
-  final String storyId;
-  final String storyTitle;
-
   const StoryGraphScreen({
-    super.key,
     required this.storyId,
     required this.storyTitle,
+    super.key,
   });
+  final String storyId;
+  final String storyTitle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,10 +107,9 @@ class StoryGraphScreen extends ConsumerWidget {
 }
 
 class _NodeTile extends StatelessWidget {
+  const _NodeTile({required this.node, required this.storyId});
   final StoryNode node;
   final String storyId;
-
-  const _NodeTile({required this.node, required this.storyId});
 
   @override
   Widget build(BuildContext context) {
@@ -122,16 +120,13 @@ class _NodeTile extends StatelessWidget {
       case NodeType.choice:
         typeColor = Colors.amber;
         typeIcon = Icons.alt_route;
-        break;
       case NodeType.ending:
         typeColor = Colors.redAccent;
         typeIcon = Icons.flag;
-        break;
       case NodeType.narrative:
       default:
         typeColor = Colors.blueGrey;
         typeIcon = Icons.article;
-        break;
     }
 
     return Card(
@@ -149,7 +144,7 @@ class _NodeTile extends StatelessWidget {
           style: const TextStyle(color: Colors.white),
         ),
         subtitle: Text(
-          '${node.type.name.toUpperCase()}${node.isRoot ? " \u2022 ROOT" : ""}',
+          '${node.type.name.toUpperCase()}${node.isRoot ? " • ROOT" : ""}',
           style: TextStyle(color: typeColor, fontSize: 10),
         ),
         trailing: const Icon(Icons.edit, size: 16, color: Colors.white24),

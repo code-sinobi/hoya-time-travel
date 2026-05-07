@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 
 /// Simple logging utility for the app
@@ -34,7 +35,7 @@ class AppLogger {
   }) {
     _log('ERROR', message, data: data, error: error);
     if (stackTrace != null && kDebugMode) {
-      debugPrintStack(stackTrace: stackTrace);
+      dev.log('Stack trace', name: 'AppLogger', stackTrace: stackTrace);
     }
   }
 
@@ -56,6 +57,8 @@ class AppLogger {
       buffer.write(' | Error: $error');
     }
 
-    debugPrint(buffer.toString());
+    if (kDebugMode) {
+      dev.log(buffer.toString(), name: 'AppLogger');
+    }
   }
 }

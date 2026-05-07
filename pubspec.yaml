@@ -1,4 +1,4 @@
-name: hoya_app
+name: chrono_app
 description: "A new Flutter project."
 publish_to: 'none'
 version: 1.0.0+1
@@ -25,22 +25,26 @@ dependencies:
   flutter_dotenv: ^6.0.0
   font_awesome_flutter: ^10.7.0
   animated_text_kit: ^4.2.2
-  particles_flutter: ^0.1.3
-  simple_animations: ^5.0.0
-  accessibility_tools: ^2.8.0
-  widgetbook: ^3.20.2
   intl: ^0.20.2
+  freezed_annotation: ^2.4.1
 
+  accessibility_tools: any
+  widgetbook: any
+  image: ^4.8.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  # Linter plugins
+  # custom_lint: ^0.7.0
+  # riverpod_lint: ^2.3.13
   # Pinned to older versions for compatibility with riverpod_generator 2.4.0
   build_runner: ^2.4.8
   json_serializable: ^6.9.5
   riverpod_generator: ^2.4.0
   integration_test:
     sdk: flutter
+  freezed: ^2.4.5
 
 
 flutter:

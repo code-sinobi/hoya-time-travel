@@ -1,9 +1,10 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/user_progress.dart';
-import '../models/story_models.dart';
+
 import '../../../core/utils/logger.dart';
+import '../models/story_models.dart';
+import '../models/user_progress.dart';
 
 part 'story_repository.g.dart';
 
@@ -25,15 +26,16 @@ Future<Set<String>> completedStoryIds(Ref ref) async {
 }
 
 class StoryRepository {
-  final SupabaseClient _client;
-
   StoryRepository(this._client);
+  final SupabaseClient _client;
 
   Future<List<Story>> getStories() async {
     try {
       final response = await _client.from('stories').select();
-      return (response as List).map((e) => Story.fromJson(e)).toList();
-    } catch (e) {
+      return List<Map<String, dynamic>>.from(response as List)
+          .map(Story.fromJson)
+          .toList();
+    } on Object catch (e) {
       AppLogger.error('Error fetching stories', error: e);
       return [];
     }
@@ -53,7 +55,7 @@ class StoryRepository {
 
       if (response == null) return null;
       return UserProgress.fromJson(response);
-    } catch (e) {
+    } on Object {
       // If table doesn't exist or other error, return null to fail gracefully
       return null;
     }
@@ -79,7 +81,7 @@ class StoryRepository {
       await _client
           .from('user_progress')
           .upsert(data, onConflict: 'user_id,story_id');
-    } catch (e) {
+    } on Object catch (e) {
       // Handle error (e.g. table missing)
       AppLogger.error(
         'Error saving progress',
@@ -94,13 +96,13 @@ class StoryRepository {
     if (userId == null) return [];
 
     try {
-      final response = await _client
-          .from('user_progress')
-          .select()
-          .eq('user_id', userId);
+      final response =
+          await _client.from('user_progress').select().eq('user_id', userId);
 
-      return (response as List).map((e) => UserProgress.fromJson(e)).toList();
-    } catch (e) {
+      return List<Map<String, dynamic>>.from(response as List)
+          .map(UserProgress.fromJson)
+          .toList();
+    } on Object {
       return [];
     }
   }
@@ -108,20 +110,15 @@ class StoryRepository {
   Future<StoryNode?> getStoryNode(String nodeId) async {
     try {
       // Fetch node
-      final nodeResponse = await _client
-          .from('story_nodes')
-          .select()
-          .eq('id', nodeId)
-          .single();
+      final nodeResponse =
+          await _client.from('story_nodes').select().eq('id', nodeId).single();
 
       // Fetch choices for this node
-      final choicesResponse = await _client
-          .from('story_choices')
-          .select()
-          .eq('node_id', nodeId);
+      final choicesResponse =
+          await _client.from('story_choices').select().eq('node_id', nodeId);
 
-      final choices = (choicesResponse as List)
-          .map((e) => StoryChoice.fromJson(e))
+      final choices = List<Map<String, dynamic>>.from(choicesResponse as List)
+          .map(StoryChoice.fromJson)
           .toList();
 
       final node = StoryNode.fromJson(nodeResponse);
@@ -133,7 +130,7 @@ class StoryRepository {
         backgroundImage: node.backgroundImage,
         choices: choices,
       );
-    } catch (e) {
+    } on Object catch (e) {
       AppLogger.error('Error fetching node $nodeId', error: e);
       return null;
     }

@@ -17,6 +17,7 @@ abstract class AppRoutes {
   static const String portal = '/portal';
   static const String library = '/library';
   static const String explore = '/explore';
+  static const String community = '/community';
   static const String rifts = '/rifts';
   static const String profile = '/profile';
 

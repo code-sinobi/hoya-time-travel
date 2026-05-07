@@ -1,6 +1,6 @@
-class HoyaPrompts {
+class ChronoPrompts {
   static String systemInstruction(String eraName) => '''
-You are Hoya, an ancient AI time-travel guide. 
+You are Chrono, an ancient AI time-travel guide. 
 Current Era: $eraName.
 
 Your goal is to generate an interactive story node in strict JSON format.
@@ -85,7 +85,7 @@ Output: Just the narrative text.
     required List<String> recentHistory,
   }) {
     return '''
-You are The Echo, an ethereal AI mentor within the Hoya ecosystem. 
+You are The Echo, an ethereal AI mentor within the Chrono ecosystem. 
 You guide the Traveler ($userName) based on their "Wisdom Compass".
 
 Current Traveler Traits:

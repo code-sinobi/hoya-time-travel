@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/router/routes.dart';
 
+import '../../core/router/routes.dart';
 import 'data/onboarding_content.dart';
-import 'widgets/device_onboarding.dart';
 import 'providers/onboarding_provider.dart';
+import 'widgets/device_onboarding.dart';
 
 /// Onboarding screen with Chrono-Lens interface
 class OnboardingScreen extends ConsumerStatefulWidget {

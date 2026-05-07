@@ -1,10 +1,12 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/logger.dart';
 
 part 'openrouter_service.g.dart';
 
@@ -13,8 +15,7 @@ part 'openrouter_service.g.dart';
 /// Default model: Gemma 3n E4B IT (free)
 @Riverpod(keepAlive: true)
 OpenRouterService openRouterService(Ref ref) {
-  var apiKey =
-      const String.fromEnvironment('OPENROUTER_API_KEY', defaultValue: '');
+  var apiKey = const String.fromEnvironment('OPENROUTER_API_KEY');
 
   if (apiKey.isEmpty && dotenv.isInitialized) {
     apiKey = dotenv.env['OPENROUTER_API_KEY'] ?? '';
@@ -30,10 +31,6 @@ OpenRouterService openRouterService(Ref ref) {
 }
 
 class TokenUsage {
-  final int promptTokens;
-  final int completionTokens;
-  final int totalTokens;
-
   TokenUsage({
     required this.promptTokens,
     required this.completionTokens,
@@ -42,11 +39,14 @@ class TokenUsage {
 
   factory TokenUsage.fromJson(Map<String, dynamic> json) {
     return TokenUsage(
-      promptTokens: json['prompt_tokens'] ?? 0,
-      completionTokens: json['completion_tokens'] ?? 0,
-      totalTokens: json['total_tokens'] ?? 0,
+      promptTokens: (json['prompt_tokens'] as num?)?.toInt() ?? 0,
+      completionTokens: (json['completion_tokens'] as num?)?.toInt() ?? 0,
+      totalTokens: (json['total_tokens'] as num?)?.toInt() ?? 0,
     );
   }
+  final int promptTokens;
+  final int completionTokens;
+  final int totalTokens;
 
   @override
   String toString() =>
@@ -54,6 +54,7 @@ class TokenUsage {
 }
 
 class OpenRouterService {
+  OpenRouterService(this.apiKey);
   final String apiKey;
   static const String _baseUrl =
       'https://openrouter.ai/api/v1/chat/completions';
@@ -69,11 +70,9 @@ class OpenRouterService {
 
   // App attribution headers for OpenRouter leaderboards
   static const Map<String, String> _appHeaders = {
-    'HTTP-Referer': 'https://hoya-app.com',
-    'X-Title': 'Hoya - History\'s Own Your Adventure',
+    'HTTP-Referer': 'https://chrono-app.com',
+    'X-Title': 'Chrono - History\'s Own Your Adventure',
   };
-
-  OpenRouterService(this.apiKey);
 
   /// Generate content using OpenRouter API
   /// Returns parsed JSON response from the AI model
@@ -120,8 +119,9 @@ class OpenRouterService {
 
       // Track usage
       if (jsonResponse.containsKey('usage')) {
-        _lastUsage = TokenUsage.fromJson(jsonResponse['usage']);
-        debugPrint('OpenRouter Token Usage: $_lastUsage');
+        _lastUsage =
+            TokenUsage.fromJson(jsonResponse['usage'] as Map<String, dynamic>);
+        AppLogger.debug('Token Usage: $_lastUsage');
       }
 
       // Extract the assistant's message content
@@ -130,17 +130,19 @@ class OpenRouterService {
         throw Exception('No response from OpenRouter');
       }
 
-      final messageContent = choices[0]['message']['content'] as String;
+      final firstChoice = choices[0] as Map<String, dynamic>;
+      final message = firstChoice['message'] as Map<String, dynamic>;
+      final messageContent = message['content'] as String;
 
       // Parse the JSON content from the response
       final cleanJson = _cleanJson(messageContent);
       return jsonDecode(cleanJson) as Map<String, dynamic>;
-    } catch (e) {
-      debugPrint('OpenRouter Error: $e');
+    } on Object catch (e) {
+      AppLogger.error('Generation Error', error: e);
 
       // Basic fallback logic: if current model isn't the free one, try the free one
       if (model != modelFree) {
-        debugPrint('Attempting fallback to free model...');
+        AppLogger.info('Attempting fallback to free model...');
         return generateContent(systemPrompt, userPrompt, model: modelFree);
       }
 
@@ -189,7 +191,8 @@ class OpenRouterService {
 
       // Track usage
       if (jsonResponse.containsKey('usage')) {
-        _lastUsage = TokenUsage.fromJson(jsonResponse['usage']);
+        _lastUsage =
+            TokenUsage.fromJson(jsonResponse['usage'] as Map<String, dynamic>);
       }
 
       final choices = jsonResponse['choices'] as List?;
@@ -197,9 +200,11 @@ class OpenRouterService {
         throw Exception('No response from OpenRouter');
       }
 
-      return choices[0]['message']['content'] as String;
-    } catch (e) {
-      debugPrint('OpenRouter Text Error: $e');
+      final firstChoice = choices[0] as Map<String, dynamic>;
+      final message = firstChoice['message'] as Map<String, dynamic>;
+      return message['content'] as String;
+    } on Object catch (e) {
+      AppLogger.error('Text Generation Error', error: e);
       if (model != modelFree) {
         return generateText(systemPrompt, userPrompt, model: modelFree);
       }
@@ -252,21 +257,22 @@ class OpenRouterService {
           if (data == '[DONE]') break;
 
           try {
-            final json = jsonDecode(data);
+            final json = jsonDecode(data) as Map<String, dynamic>;
             final choices = json['choices'] as List?;
             if (choices != null && choices.isNotEmpty) {
-              final delta = choices[0]['delta'];
+              final firstChoice = choices[0] as Map<String, dynamic>;
+              final delta = firstChoice['delta'] as Map<String, dynamic>?;
               if (delta != null && delta['content'] != null) {
                 yield delta['content'] as String;
               }
             }
-          } catch (e) {
-            debugPrint('Error parsing streaming chunk: $e');
+          } on Object catch (e) {
+            AppLogger.error('Streaming chunk parse error', error: e);
           }
         }
       }
-    } catch (e) {
-      debugPrint('OpenRouter Stream Error: $e');
+    } on Object catch (e) {
+      AppLogger.error('Stream Error', error: e);
       rethrow;
     } finally {
       client.close();

@@ -1,9 +1,9 @@
 // Simplified Portal Screen Tests
 // Tests isolated components without full app initialization to avoid Supabase dependency
 
+import 'package:chrono_app/core/theme/era_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hoya_app/core/theme/era_theme.dart';
 
 void main() {
   group('PortalScreen Components', () {

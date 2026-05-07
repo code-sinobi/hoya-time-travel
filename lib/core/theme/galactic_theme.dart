@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 
 class GalacticTheme extends ThemeExtension<GalacticTheme> {
-  final Color temporalEnergy;
-  final Color portalGlow;
-  final Color starField;
-  final TextStyle timelineFont;
-  final TextStyle hudFont;
-
   const GalacticTheme({
     required this.temporalEnergy,
     required this.portalGlow,
@@ -14,6 +8,11 @@ class GalacticTheme extends ThemeExtension<GalacticTheme> {
     required this.timelineFont,
     required this.hudFont,
   });
+  final Color temporalEnergy;
+  final Color portalGlow;
+  final Color starField;
+  final TextStyle timelineFont;
+  final TextStyle hudFont;
 
   @override
   GalacticTheme copyWith({
