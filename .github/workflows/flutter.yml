@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create dummy .env
+        run: touch .env
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -51,6 +54,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create dummy .env
+        run: touch .env
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
