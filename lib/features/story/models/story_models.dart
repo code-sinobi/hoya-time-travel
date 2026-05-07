@@ -2,65 +2,60 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'story_models.g.dart';
 
+enum NodeType { narrative, decision, checkpoint, ending }
+
 @JsonSerializable()
 class Story {
   final String id;
   final String title;
+  final String authorId;
   final String eraId;
-  final String description;
-  @JsonKey(name: 'hero_image_url')
-  final String? heroImageUrl;
-  @JsonKey(name: 'x_coordinate')
-  final double xCoordinate;
-  @JsonKey(name: 'y_coordinate')
-  final double yCoordinate;
-  @JsonKey(name: 'is_rift')
-  final bool isRift;
+  final bool isPublished;
+  final DateTime createdAt;
+  final Map<String, dynamic>? metadata;
 
   Story({
     required this.id,
     required this.title,
+    required this.authorId,
     required this.eraId,
-    required this.description,
-    required this.heroImageUrl,
-    this.xCoordinate = 0.5,
-    this.yCoordinate = 0.5,
-    this.isRift = false,
+    required this.isPublished,
+    required this.createdAt,
+    this.metadata,
   });
 
   factory Story.fromJson(Map<String, dynamic> json) {
-    if (json['description'] == null) {
-      json['description'] = '';
-    }
-    return _$StoryFromJson(json);
+    // Defensive copy to avoid mutating the original map
+    final data = Map<String, dynamic>.from(json);
+    return _$StoryFromJson(data);
   }
+
   Map<String, dynamic> toJson() => _$StoryToJson(this);
 }
-
-enum NodeType { narrative, choice, puzzle, combat, ending }
 
 @JsonSerializable()
 class StoryNode {
   final String id;
   final NodeType type;
-  final String content; // The narrative text or puzzle description
-  @JsonKey(name: 'background_image')
-  final String? backgroundImage;
-  @JsonKey(
-    includeFromJson: false,
-  ) // Choices are fetched separately now and merged manually in repository
+  final String content;
   final List<StoryChoice> choices;
+  final bool isRoot;
+  final bool isEnding;
+  final String? endingType;
 
   StoryNode({
     required this.id,
     required this.type,
     required this.content,
-    this.backgroundImage,
-    this.choices = const [],
+    required this.choices,
+    this.isRoot = false,
+    this.isEnding = false,
+    this.endingType,
   });
 
   factory StoryNode.fromJson(Map<String, dynamic> json) =>
       _$StoryNodeFromJson(json);
+
   Map<String, dynamic> toJson() => _$StoryNodeToJson(this);
 }
 
@@ -68,18 +63,18 @@ class StoryNode {
 class StoryChoice {
   final String id;
   final String text;
-  @JsonKey(name: 'next_node_id')
-  final String? nextNodeId; // Null if it triggers AI generation
-  final Map<String, dynamic>? impact; // { "health": -10, "gold": +5 }
+  final String? nextNodeId;
+  final Map<String, dynamic>? requirements;
 
   StoryChoice({
     required this.id,
     required this.text,
     this.nextNodeId,
-    this.impact,
+    this.requirements,
   });
 
   factory StoryChoice.fromJson(Map<String, dynamic> json) =>
       _$StoryChoiceFromJson(json);
+
   Map<String, dynamic> toJson() => _$StoryChoiceToJson(this);
 }
