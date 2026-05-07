@@ -417,7 +417,7 @@ class _PortalScreenState extends ConsumerState<PortalScreen>
                         loading: () =>
                             const CircularProgressIndicator(strokeWidth: 2),
                         error: (context, error) => const Icon(Icons.error,
-                            color: Colors.red, size: 20),
+                            color: Colors.red, size: 20,),
                       ),
                     ),
                   ),

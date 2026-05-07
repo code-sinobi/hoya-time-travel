@@ -40,5 +40,5 @@ void main() {
     // Verify the card and text render
     expect(find.byType(MythicCard), findsOneWidget);
     expect(find.text('Golden Test'), findsOneWidget);
-  }, skip: Platform.environment.containsKey('CI'));
+  }, skip: Platform.environment.containsKey('CI'),);
 }
