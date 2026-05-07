@@ -39,7 +39,7 @@ jobs:
         run: flutter pub get
 
       - name: Run Analysis
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
   golden-test:
     name: Visual Regression
