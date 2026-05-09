@@ -111,7 +111,7 @@ class CommunityScreen extends ConsumerWidget {
                   ),
                   error: (err, _) => SliverToBoxAdapter(
                     child: _ErrorState(
-                      message: err.toString(),
+                      message: 'Something went wrong — please try again.',
                       onRetry: () => ref.invalidate(premiseControllerProvider),
                     ),
                   ),
@@ -128,6 +128,7 @@ class CommunityScreen extends ConsumerWidget {
                         separatorBuilder: (_, __) =>
                             const SizedBox(height: AppSpacing.sm),
                         itemBuilder: (context, index) => _PremiseCard(
+                          key: ValueKey(premises[index].id),
                           premise: premises[index],
                           index: index,
                         ),
@@ -162,7 +163,11 @@ class CommunityScreen extends ConsumerWidget {
 // Premise Card — Interactive Expanding Archive Scroll
 // ═══════════════════════════════════════════════════════════════════
 class _PremiseCard extends ConsumerStatefulWidget {
-  const _PremiseCard({required this.premise, required this.index});
+  const _PremiseCard({
+    super.key,
+    required this.premise,
+    required this.index,
+  });
   final StoryPremise premise;
   final int index;
 
@@ -482,9 +487,8 @@ class _VoteButton extends ConsumerWidget {
     return Semantics(
       label: 'Vote for this premise, $voteCount votes',
       button: true,
-      child: SizedBox(
-        width: 60,
-        height: 48,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 60, minHeight: 48),
         child: Material(
           color: MythicColors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.pill),

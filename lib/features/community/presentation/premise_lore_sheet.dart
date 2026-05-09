@@ -44,8 +44,11 @@ class PremiseLoreSheet extends StatelessWidget {
               ),
             ),
           ),
-          child: Column(
-            children: [
+          child: SafeArea(
+            top: true,
+            bottom: false,
+            child: Column(
+              children: [
               // ── Drag handle ─────────────────────────────
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -75,10 +78,12 @@ class PremiseLoreSheet extends StatelessWidget {
                       children: [
                         _LoreBadge(label: premise.era, color: eraColor),
                         const SizedBox(width: AppSpacing.xs),
-                        _LoreBadge(
-                          label: premise.culture,
-                          color: MythicColors.stoneGray,
-                          outlined: true,
+                        Flexible(
+                          child: _LoreBadge(
+                            label: premise.culture,
+                            color: MythicColors.stoneGray,
+                            outlined: true,
+                          ),
                         ),
                         const Spacer(),
                         IconButton(
@@ -200,12 +205,13 @@ class PremiseLoreSheet extends StatelessWidget {
                     // CTA: Etch Snippet
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        final parentNav = Navigator.of(context, rootNavigator: true);
+                        parentNav.pop();
                         showModalBottomSheet<void>(
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: MythicColors.transparent,
-                          builder: (_) => const SnippetComposeSheet(),
+                          builder: (_) => SnippetComposeSheet(originStoryId: premise.id),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -231,10 +237,11 @@ class PremiseLoreSheet extends StatelessWidget {
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }
 
 class _LoreBadge extends StatelessWidget {
@@ -263,6 +270,8 @@ class _LoreBadge extends StatelessWidget {
       ),
       child: Text(
         label.toUpperCase(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: AppTypography.label.copyWith(
           color: color,
           fontSize: FontSize.micro,
