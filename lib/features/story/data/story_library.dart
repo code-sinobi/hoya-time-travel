@@ -31,6 +31,7 @@ class StoryLibraryNotifier extends Notifier<List<StoryMetadata>> {
               primaryColor: MythicColors.bronze,
               aiPrompt: '',
               isPremium: s.isPremium,
+              mapCoordinate: Offset(s.xCoordinate, s.yCoordinate),
             ),
           )
           .toList();
@@ -50,6 +51,7 @@ class StoryMetadata {
     required this.primaryColor,
     required this.aiPrompt,
     this.isPremium = false,
+    this.mapCoordinate = const Offset(0.5, 0.5),
   });
   final String id;
   final String title;
@@ -61,6 +63,7 @@ class StoryMetadata {
   final Color primaryColor;
   final String aiPrompt;
   final bool isPremium;
+  final Offset mapCoordinate;
 
   // Alias for UI consistency - allows easy future era-based color logic overrides
   Color get eraColor => primaryColor;

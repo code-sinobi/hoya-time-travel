@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/profile.dart';
@@ -79,5 +80,34 @@ class UserProfile extends _$UserProfile {
         .update({'role': 'chronicler'}).eq('id', current.id);
 
     ref.invalidateSelf();
+  }
+
+  Future<void> uploadAvatar(String imagePath) async {
+    final current = state.value;
+    if (current == null) return;
+
+    try {
+      final file = File(imagePath);
+      final fileExt = imagePath.split('.').last;
+      final fileName = '${current.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final filePath = '${current.id}/$fileName';
+
+      await Supabase.instance.client.storage
+          .from('avatars')
+          .upload(filePath, file);
+
+      final imageUrlResponse = Supabase.instance.client.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+      await Supabase.instance.client
+          .from('profiles')
+          .update({'avatar_url': imageUrlResponse})
+          .eq('id', current.id);
+
+      ref.invalidateSelf();
+    } catch (e) {
+      throw Exception('Failed to upload avatar: $e');
+    }
   }
 }
