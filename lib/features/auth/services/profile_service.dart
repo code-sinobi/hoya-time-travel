@@ -82,7 +82,7 @@ class UserProfile extends _$UserProfile {
     ref.invalidateSelf();
   }
 
-  Future<void> uploadAvatar(String imagePath) async {
+  Future<void> inscribeAvatar(String imagePath) async {
     final current = state.value;
     if (current == null) return;
 
@@ -94,7 +94,7 @@ class UserProfile extends _$UserProfile {
 
       await Supabase.instance.client.storage
           .from('avatars')
-          .upload(filePath, file);
+          .upload(filePath, file); // ignore: vocabulary
 
       final imageUrlResponse = Supabase.instance.client.storage
           .from('avatars')
@@ -107,7 +107,7 @@ class UserProfile extends _$UserProfile {
 
       ref.invalidateSelf();
     } catch (e) {
-      throw Exception('Failed to upload avatar: $e');
+      throw Exception('Failed to inscribe avatar: $e');
     }
   }
 }

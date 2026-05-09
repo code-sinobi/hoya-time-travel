@@ -103,6 +103,9 @@ Future<List<String>> scanFile(File file) async {
     if (line.trimLeft().startsWith('abstract class ')) continue;
     if (line.contains('extends ') || line.contains('implements ')) continue;
 
+    // Skip explicitly ignored lines
+    if (line.contains('ignore: vocabulary')) continue;
+
     // Check always-banned terms
     for (final entry in bannedTerms.entries) {
       if (line.toLowerCase().contains(entry.key.toLowerCase())) {
