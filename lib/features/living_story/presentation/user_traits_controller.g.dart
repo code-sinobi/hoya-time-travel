@@ -7,7 +7,7 @@ part of 'user_traits_controller.dart';
 // **************************************************************************
 
 String _$userTraitsControllerHash() =>
-    r'27d2d7a674e4d776ce5665a61c45ded84fdd83da';
+    r'0ac42818b4c66187dfe25ea079954f31aadb1b5c';
 
 /// See also [UserTraitsController].
 @ProviderFor(UserTraitsController)

@@ -123,7 +123,7 @@ class __$$ArchiveFilterStateImplCopyWithImpl<$Res>
 
 class _$ArchiveFilterStateImpl implements _ArchiveFilterState {
   const _$ArchiveFilterStateImpl(
-      {this.selectedMode = ArchiveMode.map,
+      {this.selectedMode = ArchiveMode.vault,
       this.selectedEra,
       this.searchQuery = ''});
 

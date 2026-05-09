@@ -7,7 +7,7 @@ part of 'living_story_controller.dart';
 // **************************************************************************
 
 String _$livingStoryControllerHash() =>
-    r'ba8ab6de1ae369c1493ec66e000e0efc0ad8a2a3';
+    r'40abcf37e42ce87afa8c0566137b61bb04aea67c';
 
 /// See also [LivingStoryController].
 @ProviderFor(LivingStoryController)
