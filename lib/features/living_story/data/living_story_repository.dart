@@ -278,7 +278,7 @@ class LivingStoryRepository {
       final scoreMap = {
         for (final e in data)
           (e as Map<String, dynamic>)['story_id'] as String:
-              (e['relevance_score'] as num).toDouble(),
+              (e['relevance_score'] as num?)?.toDouble() ?? 0.0,
       };
 
       // 3. Fetch full stories

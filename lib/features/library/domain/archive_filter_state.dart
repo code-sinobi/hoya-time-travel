@@ -11,7 +11,7 @@ enum ArchiveMode {
 @freezed
 class ArchiveFilterState with _$ArchiveFilterState {
   const factory ArchiveFilterState({
-    @Default(ArchiveMode.map) ArchiveMode selectedMode,
+    @Default(ArchiveMode.vault) ArchiveMode selectedMode,
     String? selectedEra,
     @Default('') String searchQuery,
   }) = _ArchiveFilterState;

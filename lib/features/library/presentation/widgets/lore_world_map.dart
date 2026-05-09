@@ -5,6 +5,7 @@ import '../../../../core/theme/mythic_colors.dart';
 import '../library_provider.dart';
 import 'lore_preview_sheet.dart';
 import 'map_story_node.dart';
+import 'starfield_painter.dart';
 
 class LoreWorldMap extends ConsumerStatefulWidget {
   const LoreWorldMap({super.key});
@@ -16,6 +17,24 @@ class LoreWorldMap extends ConsumerStatefulWidget {
 class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
   final TransformationController _transformController =
       TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Center the initial view so stories at coordinate (0.5, 0.5) are visible.
+    // Map is 2x width, 1.5x height. Story at (0.5,0.5) → (mapW, 0.75*mapH).
+    // Translate to bring that point to screen center.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final size = MediaQuery.of(context).size;
+      // Shift content left by half a screen width and up by a quarter height.
+      _transformController.value = Matrix4.translationValues(
+        -size.width * 0.5,
+        -size.height * 0.25,
+        0,
+      );
+    });
+  }
 
   @override
   void dispose() {
@@ -91,35 +110,31 @@ class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
                     height: mapSize.height,
                     child: Stack(
                       children: [
-                        // Background Map Image (placeholder solid/gradient for now if no asset)
-                        Container(
-                          decoration: const BoxDecoration(
-                            gradient: RadialGradient(
-                              colors: [
-                                MythicColors.deepIndigo,
-                                MythicColors.voidBackground,
-                              ],
-                              radius: 1.5,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Opacity(
-                              opacity: 0.1,
-                              child: Icon(
-                                Icons.public,
-                                size: 400,
-                                color: MythicColors.bronze,
-                              ),
-                            ),
+                        // Background Map Image (Starfield)
+                        SizedBox.expand(
+                          child: CustomPaint(
+                            painter: StarfieldPainter(),
                           ),
                         ),
 
                         // Story Nodes
                         ...stories.map((story) {
-                          final pos = story.mapCoordinate;
+                          var pos = story.mapCoordinate;
+                          // Apply deterministic jitter for stories with default coordinates (0.5, 0.5)
+                          if (pos == const Offset(0.5, 0.5)) {
+                            final hash = story.id.hashCode;
+                            // Generate a stable pseudo-random coordinate based on the hash
+                            final dx = 0.1 + (hash % 100) / 100.0 * 0.8;
+                            final dy =
+                                0.1 + ((hash ~/ 100) % 100) / 100.0 * 0.8;
+                            pos = Offset(dx, dy);
+                          }
+
                           return Positioned(
-                            left: pos.dx * mapSize.width,
-                            top: pos.dy * mapSize.height,
+                            left: pos.dx * mapSize.width - 24,
+                            top: pos.dy * mapSize.height - 24,
+                            width: 48,
+                            height: 48,
                             child: MapStoryNode(
                               story: story,
                               onTap: () {

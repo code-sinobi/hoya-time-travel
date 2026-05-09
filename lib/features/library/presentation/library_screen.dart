@@ -8,7 +8,7 @@ import '../domain/archive_filter_state.dart';
 import 'library_provider.dart';
 import 'widgets/era_filter_strip.dart';
 import 'widgets/lore_timeline_view.dart';
-import 'widgets/lore_vault_grid.dart';
+import 'widgets/rift_feed.dart';
 import 'widgets/lore_world_map.dart';
 import 'widgets/mode_tab_switcher.dart';
 
@@ -86,10 +86,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       case ArchiveMode.timeline:
         return const LoreTimelineView(key: ValueKey('timeline_mode'));
       case ArchiveMode.vault:
-        return LoreVaultGrid(
-          key: const ValueKey('vault_mode'),
-          scrollController: _scrollController,
-        );
+        return const RiftFeed(key: ValueKey('vault_mode'));
     }
   }
 }

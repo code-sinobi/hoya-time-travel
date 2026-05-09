@@ -29,9 +29,13 @@ class ArchiveFilter extends _$ArchiveFilter {
 Future<List<StoryMetadata>> libraryFilteredStories(
   LibraryFilteredStoriesRef ref,
 ) async {
+  // IMPORTANT: All ref.watch calls must be synchronous (before any await).
   final filter = ref.watch(archiveFilterProvider);
   final query = filter.searchQuery;
   final era = filter.selectedEra;
+
+  // Watch synchronously before the debounce await.
+  final allStories = ref.watch(storyLibraryProvider);
 
   // Debounce for search
   bool didDispose = false;
@@ -40,7 +44,7 @@ Future<List<StoryMetadata>> libraryFilteredStories(
   await Future.delayed(const Duration(milliseconds: 300));
   if (didDispose) return ref.state.valueOrNull ?? [];
 
-  var stories = ref.watch(storyLibraryProvider);
+  var stories = allStories;
   if (era != null) {
     stories = stories.where((s) => s.era == era).toList();
   }

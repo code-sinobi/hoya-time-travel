@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_typography.dart';
@@ -91,11 +92,19 @@ class _SheetHeader extends StatelessWidget {
             height: 250,
             width: double.infinity,
             fit: BoxFit.cover,
+            semanticLabel: story.title,
             errorBuilder: (c, e, s) => Container(
               height: 250,
               color: MythicColors.voidBackground,
             ),
-          ),
+          )
+              .animate()
+              .shimmer(
+                duration: 1500.ms,
+                color: MythicColors.fluxCyan.withValues(alpha: 0.5),
+                angle: 1.5,
+              )
+              .fadeIn(duration: 800.ms),
         ),
         Positioned.fill(
           child: Container(
@@ -120,6 +129,7 @@ class _SheetHeader extends StatelessWidget {
               Icons.close,
               color: MythicColors.stoneGray,
             ),
+            tooltip: 'Close preview',
             onPressed: () => context.pop(),
           ),
         ),
