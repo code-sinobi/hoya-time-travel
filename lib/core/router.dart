@@ -13,7 +13,7 @@ import '../features/chronicler/presentation/chronicler_onboarding_screen.dart';
 import '../features/chronicler/presentation/node_editor_screen.dart';
 import '../features/chronicler/presentation/story_graph_screen.dart';
 import '../features/community/presentation/community_screen.dart';
-import '../features/library/library_screen.dart';
+import '../features/library/presentation/library_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/portal/portal_screen.dart';
