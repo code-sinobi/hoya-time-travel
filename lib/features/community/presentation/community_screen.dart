@@ -84,8 +84,7 @@ class CommunityScreen extends ConsumerWidget {
                           height: AppSpacing.md,
                           decoration: BoxDecoration(
                             color: MythicColors.bronze,
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.pill),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.xs),
@@ -282,8 +281,7 @@ class _PremiseCardState extends ConsumerState<_PremiseCard> {
                       Text(
                         widget.premise.description,
                         style: AppTypography.storyBody.copyWith(
-                          color:
-                              MythicColors.parchment.withValues(alpha: 0.65),
+                          color: MythicColors.parchment.withValues(alpha: 0.65),
                         ),
                         maxLines: _isExpanded ? null : 3,
                         overflow: _isExpanded ? null : TextOverflow.ellipsis,
@@ -392,7 +390,8 @@ class _ActionButton extends StatelessWidget {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           foregroundColor: MythicColors.stoneGray,
-          side: BorderSide(color: MythicColors.stoneGray.withValues(alpha: 0.3)),
+          side:
+              BorderSide(color: MythicColors.stoneGray.withValues(alpha: 0.3)),
           minimumSize: const Size.fromHeight(44),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -495,9 +494,7 @@ class _VoteButton extends ConsumerWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadius.pill),
             onTap: () {
-              ref
-                  .read(premiseControllerProvider.notifier)
-                  .castVote(premiseId);
+              ref.read(premiseControllerProvider.notifier).castVote(premiseId);
             },
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 4),
@@ -558,9 +555,7 @@ class _PremiseLoadingSkeleton extends StatelessWidget {
                   color: MythicColors.stoneGray.withValues(alpha: 0.1),
                 ),
               ),
-            )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .shimmer(
+            ).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(
                   duration: 1500.ms,
                   color: MythicColors.bronze.withValues(alpha: 0.08),
                 ),
@@ -640,9 +635,7 @@ class _EmptyState extends StatelessWidget {
               Icons.auto_awesome,
               size: AppIconSize.xxl,
               color: MythicColors.bronze.withValues(alpha: 0.6),
-            )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .scale(
+            ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
                   begin: const Offset(1, 1),
                   end: const Offset(1.1, 1.1),
                   duration: 2000.ms,
