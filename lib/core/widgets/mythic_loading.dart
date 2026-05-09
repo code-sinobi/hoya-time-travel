@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/era_theme.dart';
+import '../theme/era_theme.dart' hide MythicColors;
+import '../theme/mythic_colors.dart';
 
 /// A unified loading indicator that adapts to the current EraTheme.
 class MythicLoading extends StatelessWidget {

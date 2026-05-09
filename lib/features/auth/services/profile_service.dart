@@ -89,7 +89,8 @@ class UserProfile extends _$UserProfile {
     try {
       final file = File(imagePath);
       final fileExt = imagePath.split('.').last;
-      final fileName = '${current.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final fileName =
+          '${current.id}-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
       final filePath = '${current.id}/$fileName';
 
       await Supabase.instance.client.storage
@@ -102,8 +103,7 @@ class UserProfile extends _$UserProfile {
 
       await Supabase.instance.client
           .from('profiles')
-          .update({'avatar_url': imageUrlResponse})
-          .eq('id', current.id);
+          .update({'avatar_url': imageUrlResponse}).eq('id', current.id);
 
       ref.invalidateSelf();
     } catch (e) {
