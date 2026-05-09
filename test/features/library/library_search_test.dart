@@ -11,7 +11,7 @@ void main() {
 
       final filter = container.read(archiveFilterProvider);
       expect(filter.searchQuery, '');
-      expect(filter.selectedMode, ArchiveMode.map);
+      expect(filter.selectedMode, ArchiveMode.vault);
       expect(filter.selectedEra, isNull);
     });
 
