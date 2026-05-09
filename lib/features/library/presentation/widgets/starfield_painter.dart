@@ -9,20 +9,9 @@ class StarfieldPainter extends CustomPainter {
   final int seed;
   static const double gridSize = 100.0;
 
-  Random? _cachedRandom;
-  int? _cachedSeed;
-
-  Random _getRandom() {
-    if (_cachedRandom == null || _cachedSeed != seed) {
-      _cachedRandom = Random(seed);
-      _cachedSeed = seed;
-    }
-    return _cachedRandom!;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
-    final random = _getRandom();
+    final random = Random(seed);
     final paint = Paint()..style = PaintingStyle.fill;
 
     // Background gradient
