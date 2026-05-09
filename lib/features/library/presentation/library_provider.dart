@@ -34,11 +34,11 @@ Future<List<StoryMetadata>> libraryFilteredStories(
   final era = filter.selectedEra;
 
   // Debounce for search
-  await Future.delayed(const Duration(milliseconds: 300));
-  if (ref.state.isLoading) return []; // In case another request fired
+  bool didDispose = false;
+  ref.onDispose(() => didDispose = true);
 
-  // Simulate remote fetch
-  await Future.delayed(const Duration(milliseconds: 500));
+  await Future.delayed(const Duration(milliseconds: 300));
+  if (didDispose) return ref.state.valueOrNull ?? [];
 
   var stories = ref.watch(storyLibraryProvider);
   if (era != null) {

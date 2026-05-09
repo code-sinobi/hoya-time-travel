@@ -28,45 +28,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late final AnimationController _lottieController;
   late final Ticker _particleTicker;
 
-  final List<_Star> _stars = [];
-  Offset? _touchPosition;
-  Size _screenSize = Size.zero;
+  final _StarSystem _starSystem = _StarSystem();
 
   @override
   void initState() {
     super.initState();
     _lottieController = AnimationController(vsync: this);
 
-    // Setup particle ticker for 60fps update
+    // Setup particle ticker for 60fps update without rebuilding widget
     _particleTicker = createTicker((elapsed) {
-      _updateParticles();
+      _starSystem.update();
     });
     _particleTicker.start();
-
-    // Initialize stars (we'll distribute them once we have a size, or loosely bound them to a large area)
-    final rand = math.Random();
-    for (int i = 0; i < 80; i++) {
-      _stars.add(
-        _Star(
-          position: Offset(
-            rand.nextDouble() * 1000,
-            rand.nextDouble() * 2000,
-          ), // arbitrary large initial area
-          velocity: Offset(
-            (rand.nextDouble() - 0.5) * 0.5,
-            (rand.nextDouble() - 0.5) * 0.5,
-          ),
-          radius: rand.nextDouble() * 1.5 + 0.5,
-          baseAlpha: rand.nextDouble() * 0.6 + 0.2,
-        ),
-      );
-    }
   }
 
   @override
   void dispose() {
     _lottieController.dispose();
     _particleTicker.dispose();
+    _starSystem.dispose();
     super.dispose();
   }
 
@@ -77,59 +57,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     }
   }
 
-  void _updateParticles() {
-    if (_screenSize == Size.zero) return;
-
-    bool needsRepaint = false;
-    for (var star in _stars) {
-      star.position += star.velocity;
-
-      // Wrap around edges to keep them flowing
-      if (star.position.dx < 0) {
-        star.position = Offset(_screenSize.width, star.position.dy);
-      }
-      if (star.position.dx > _screenSize.width) {
-        star.position = Offset(0, star.position.dy);
-      }
-      if (star.position.dy < 0) {
-        star.position = Offset(star.position.dx, _screenSize.height);
-      }
-      if (star.position.dy > _screenSize.height) {
-        star.position = Offset(star.position.dx, 0);
-      }
-
-      // React to touch
-      if (_touchPosition != null) {
-        final double dx = _touchPosition!.dx - star.position.dx;
-        final double dy = _touchPosition!.dy - star.position.dy;
-        final double distance = math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 150) {
-          // Slight pull towards touch
-          star.position += Offset(dx * 0.01, dy * 0.01);
-          star.currentAlpha =
-              math.min(1.0, star.baseAlpha + (150 - distance) / 150);
-        } else {
-          star.currentAlpha = star.baseAlpha;
-        }
-      } else {
-        star.currentAlpha = star.baseAlpha;
-      }
-      needsRepaint = true;
-    }
-
-    if (needsRepaint && mounted) {
-      setState(() {});
-    }
-  }
-
   void _handleTouchDown(Offset position) {
-    setState(() => _touchPosition = position);
+    _starSystem.touchPosition = position;
     AppHaptics.selection();
   }
 
   void _handleTouchUpdate(Offset position) {
-    setState(() => _touchPosition = position);
+    _starSystem.touchPosition = position;
     // Occasional haptic feedback while dragging
     if (math.Random().nextDouble() > 0.9) {
       AppHaptics.selection();
@@ -137,12 +71,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   void _handleTouchUp() {
-    setState(() => _touchPosition = null);
+    _starSystem.touchPosition = null;
   }
 
   @override
   Widget build(BuildContext context) {
-    _screenSize = MediaQuery.of(context).size;
+    _starSystem.screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: MythicColors.voidBackground,
@@ -191,8 +125,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
             // 3. Interactive Constellation Layer
             CustomPaint(
               painter: _ConstellationPainter(
-                stars: _stars,
-                touchPosition: _touchPosition,
+                starSystem: _starSystem,
                 lineColor: MythicColors.ancientGold,
               ),
             ),
@@ -273,8 +206,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ..duration = composition.duration
       ..forward();
 
-    // Timer for navigation based on animation duration
-    Future<void>.delayed(composition.duration, _checkAuthAndNavigate);
+    // Ensure branding is visible for at least 2 seconds
+    final duration = math.max(2000, composition.duration.inMilliseconds);
+    Future<void>.delayed(
+      Duration(milliseconds: duration),
+      _checkAuthAndNavigate,
+    );
   }
 }
 
@@ -293,23 +230,102 @@ class _Star {
   }) : currentAlpha = baseAlpha;
 }
 
+class _StarSystem extends ChangeNotifier {
+  final List<_Star> stars = [];
+  Offset? touchPosition;
+  Size _screenSize = Size.zero;
+  bool _initialized = false;
+
+  set screenSize(Size size) {
+    if (size != Size.zero && !_initialized) {
+      _screenSize = size;
+      _initialized = true;
+      final rand = math.Random();
+      for (int i = 0; i < 80; i++) {
+        stars.add(
+          _Star(
+            position: Offset(
+              rand.nextDouble() * size.width,
+              rand.nextDouble() * size.height,
+            ),
+            velocity: Offset(
+              (rand.nextDouble() - 0.5) * 0.5,
+              (rand.nextDouble() - 0.5) * 0.5,
+            ),
+            radius: rand.nextDouble() * 1.5 + 0.5,
+            baseAlpha: rand.nextDouble() * 0.6 + 0.2,
+          ),
+        );
+      }
+    } else {
+      _screenSize = size;
+    }
+  }
+
+  Size get screenSize => _screenSize;
+
+  void update() {
+    if (!_initialized || _screenSize == Size.zero) return;
+
+    for (var star in stars) {
+      star.position += star.velocity;
+
+      // Wrap around edges to keep them flowing
+      if (star.position.dx < 0) {
+        star.position = Offset(_screenSize.width, star.position.dy);
+      }
+      if (star.position.dx > _screenSize.width) {
+        star.position = Offset(0, star.position.dy);
+      }
+      if (star.position.dy < 0) {
+        star.position = Offset(star.position.dx, _screenSize.height);
+      }
+      if (star.position.dy > _screenSize.height) {
+        star.position = Offset(star.position.dx, 0);
+      }
+
+      // React to touch
+      if (touchPosition != null) {
+        final double dx = touchPosition!.dx - star.position.dx;
+        final double dy = touchPosition!.dy - star.position.dy;
+        final double distance = math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 150) {
+          // Slight pull towards touch
+          star.position += Offset(dx * 0.01, dy * 0.01);
+          star.currentAlpha =
+              math.min(1.0, star.baseAlpha + (150 - distance) / 150);
+        } else {
+          star.currentAlpha = star.baseAlpha;
+        }
+      } else {
+        star.currentAlpha = star.baseAlpha;
+      }
+    }
+    notifyListeners();
+  }
+}
+
 class _ConstellationPainter extends CustomPainter {
-  final List<_Star> stars;
-  final Offset? touchPosition;
+  final _StarSystem starSystem;
   final Color lineColor;
 
   _ConstellationPainter({
-    required this.stars,
-    required this.touchPosition,
+    required this.starSystem,
     required this.lineColor,
-  });
+  }) : super(repaint: starSystem);
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (starSystem.stars.isEmpty) return;
+
     final Paint starPaint = Paint()..style = PaintingStyle.fill;
     final Paint linePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
+
+    final touchPosition = starSystem.touchPosition;
+    final stars = starSystem.stars;
 
     // Draw lines connecting stars if they are close
     for (int i = 0; i < stars.length; i++) {
@@ -318,12 +334,12 @@ class _ConstellationPainter extends CustomPainter {
       // Draw line to touch position if very close
       if (touchPosition != null) {
         final double distanceToTouch =
-            (star1.position - touchPosition!).distance;
+            (star1.position - touchPosition).distance;
         if (distanceToTouch < 120) {
           linePaint.color = lineColor.withValues(
             alpha: (1.0 - (distanceToTouch / 120)) * 0.5,
           );
-          canvas.drawLine(star1.position, touchPosition!, linePaint);
+          canvas.drawLine(star1.position, touchPosition, linePaint);
         }
       }
 
@@ -362,6 +378,5 @@ class _ConstellationPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ConstellationPainter oldDelegate) =>
-      true; // Always repaint when animated
+  bool shouldRepaint(covariant _ConstellationPainter oldDelegate) => false;
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/mythic_colors.dart';
+import '../../../story/data/story_library.dart';
 import '../library_provider.dart';
 import 'vault_story_card.dart';
 
@@ -47,7 +48,15 @@ class LoreTimelineView extends ConsumerWidget {
       loading: () => const Center(
         child: CircularProgressIndicator(color: MythicColors.bronze),
       ),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, st) {
+        debugPrint('Timeline load error: $e\n$st');
+        return const Center(
+          child: Text(
+            'Unable to load timeline. Please try again.',
+            style: TextStyle(color: MythicColors.stoneGray),
+          ),
+        );
+      },
     );
   }
 }
@@ -60,7 +69,7 @@ class _EraColumn extends StatelessWidget {
   });
 
   final String era;
-  final List<dynamic> stories;
+  final List<StoryMetadata> stories;
   final bool isLast;
 
   @override

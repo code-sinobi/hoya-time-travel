@@ -17,6 +17,12 @@ class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
   final TransformationController _transformController =
       TransformationController();
 
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
+
   void _zoomToNode(Offset position, Size mapSize) {
     // Basic zoom to center on the node
     final targetScale = 2.0;
@@ -40,6 +46,35 @@ class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
       data: (stories) {
         return LayoutBuilder(
           builder: (context, constraints) {
+            if (stories.isEmpty) {
+              return const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.map_outlined,
+                      size: 64,
+                      color: MythicColors.stoneGray,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'MAP EMPTY',
+                      style: TextStyle(
+                        color: MythicColors.stoneGray,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'No stories found in this temporal coordinate.',
+                      style: TextStyle(color: MythicColors.stoneGray),
+                    ),
+                  ],
+                ),
+              );
+            }
+
             final mapSize =
                 Size(constraints.maxWidth * 2, constraints.maxHeight * 1.5);
 
@@ -104,6 +139,7 @@ class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
                   bottom: 100, // Above nav bar
                   right: 24,
                   child: FloatingActionButton.small(
+                    tooltip: 'Reset zoom',
                     backgroundColor: MythicColors.surface2,
                     child:
                         const Icon(Icons.explore, color: MythicColors.bronze),
@@ -120,7 +156,28 @@ class _LoreWorldMapState extends ConsumerState<LoreWorldMap> {
       loading: () => const Center(
         child: CircularProgressIndicator(color: MythicColors.bronze),
       ),
-      error: (err, _) => Center(child: Text('Error: $err')),
+      error: (err, _) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              color: MythicColors.ochreRed,
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Could not load map',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            FilledButton.tonal(
+              onPressed: () => ref.refresh(libraryFilteredStoriesProvider),
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

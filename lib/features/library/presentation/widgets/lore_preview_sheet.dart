@@ -43,90 +43,13 @@ class LorePreviewSheet extends StatelessWidget {
             controller: controller,
             padding: EdgeInsets.zero,
             children: [
-              // Hero Image Header
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(24)),
-                    child: Image.asset(
-                      story.imagePath,
-                      height: 250,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        height: 250,
-                        color: MythicColors.voidBackground,
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            MythicColors.surface1.withValues(alpha: 0.5),
-                            MythicColors.surface1,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: MythicColors.stoneGray,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Content
+              _SheetHeader(story: story),
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(4),
-                            border:
-                                Border.all(color: color.withValues(alpha: 0.5)),
-                          ),
-                          child: Text(
-                            story.era.toUpperCase(),
-                            style: AppTypography.hudLabel.copyWith(
-                              fontSize: 10,
-                              color: color,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          story.culture.toUpperCase(),
-                          style: AppTypography.uiBodySm.copyWith(
-                            letterSpacing: 2,
-                            color:
-                                MythicColors.parchment.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _StoryMetadata(story: story, color: color),
                     const SizedBox(height: 16),
                     Text(
                       story.title,
@@ -141,33 +64,7 @@ class LorePreviewSheet extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text(
-                      story.description,
-                      style: AppTypography.storyBodyLg,
-                    ),
-                    const SizedBox(height: 48),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: FilledButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          context.push('/story/${story.id}/intro');
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: MythicColors.bronze,
-                          foregroundColor: MythicColors.voidBackground,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          'BEGIN JOURNEY',
-                          style: AppTypography.uiButton,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+                    _StoryContent(story: story),
                   ],
                 ),
               ),
@@ -175,6 +72,139 @@ class LorePreviewSheet extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SheetHeader extends StatelessWidget {
+  const _SheetHeader({required this.story});
+  final StoryMetadata story;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: Image.asset(
+            story.imagePath,
+            height: 250,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (c, e, s) => Container(
+              height: 250,
+              color: MythicColors.voidBackground,
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  MythicColors.surface1.withValues(alpha: 0.5),
+                  MythicColors.surface1,
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 12,
+          right: 12,
+          child: IconButton(
+            icon: const Icon(
+              Icons.close,
+              color: MythicColors.stoneGray,
+            ),
+            onPressed: () => context.pop(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StoryMetadata extends StatelessWidget {
+  const _StoryMetadata({required this.story, required this.color});
+  final StoryMetadata story;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
+          ),
+          child: Text(
+            story.era.toUpperCase(),
+            style: AppTypography.hudLabel.copyWith(
+              fontSize: 10,
+              color: color,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          story.culture.toUpperCase(),
+          style: AppTypography.uiBodySm.copyWith(
+            letterSpacing: 2,
+            color: MythicColors.parchment.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StoryContent extends StatelessWidget {
+  const _StoryContent({required this.story});
+  final StoryMetadata story;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          story.description,
+          style: AppTypography.storyBodyLg,
+        ),
+        const SizedBox(height: 48),
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: FilledButton(
+            onPressed: () {
+              context.pop();
+              context.push('/story/${story.id}/intro');
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: MythicColors.bronze,
+              foregroundColor: MythicColors.voidBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'BEGIN JOURNEY',
+              style: AppTypography.uiButton,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }

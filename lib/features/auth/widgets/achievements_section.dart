@@ -24,11 +24,17 @@ class AchievementsSection extends ConsumerWidget {
       ),
       child: ref.watch(achievementNotifierProvider).when(
             data: (achievements) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: achievements.cast<Achievement>().map((a) {
-                  return AchievementBadge(achievement: a);
-                }).toList(),
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: achievements.map((a) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: AchievementBadge(achievement: a),
+                    );
+                  }).toList(),
+                ),
               );
             },
             loading: () => const Center(

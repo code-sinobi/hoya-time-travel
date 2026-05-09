@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/mythic_colors.dart';
 import '../library_provider.dart';
 import 'archive_empty_state.dart';
 import 'archive_skeleton.dart';
@@ -47,12 +48,15 @@ class LoreVaultGrid extends ConsumerWidget {
         );
       },
       loading: () => const ArchiveSkeleton(),
-      error: (err, stack) => Center(
-        child: Text(
-          'Error: $err',
-          style: const TextStyle(color: Colors.red),
-        ),
-      ),
+      error: (err, stack) {
+        debugPrint('Vault load error: $err\n$stack');
+        return const Center(
+          child: Text(
+            'Something went wrong',
+            style: TextStyle(color: MythicColors.stoneGray),
+          ),
+        );
+      },
     );
   }
 }

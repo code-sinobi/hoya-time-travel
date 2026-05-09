@@ -133,9 +133,11 @@ class _MythicHUDState extends ConsumerState<MythicHUD>
                     child: Center(
                       child: widget.profileAsync.when(
                         data: (profile) {
-                          final initial = (profile?.username ?? 'T')
-                              .substring(0, 1)
-                              .toUpperCase();
+                          final username = profile?.username;
+                          final initial =
+                              (username != null && username.isNotEmpty)
+                                  ? username.substring(0, 1).toUpperCase()
+                                  : 'T';
                           if (profile?.avatarUrl != null &&
                               profile!.avatarUrl!.isNotEmpty) {
                             return ClipOval(
@@ -175,7 +177,7 @@ class _MythicHUDState extends ConsumerState<MythicHUD>
                         width: 12 + (_pulseController.value * 2),
                         height: 12 + (_pulseController.value * 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                          color: MythicColors.success.withValues(alpha: 0.4),
                           shape: BoxShape.circle,
                         ),
                         child: Center(

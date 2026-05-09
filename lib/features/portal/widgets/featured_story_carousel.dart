@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_route.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/mythic_colors.dart';
@@ -44,12 +45,13 @@ class _FeaturedStoryCarouselState extends ConsumerState<FeaturedStoryCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final stories = ref.watch(storyLibraryProvider);
     return PageView.builder(
       controller: _pageController,
       onPageChanged: (idx) => setState(() => _currentPage = idx),
-      itemCount: ref.watch(storyLibraryProvider).length,
+      itemCount: stories.length,
       itemBuilder: (context, index) {
-        final story = ref.watch(storyLibraryProvider)[index];
+        final story = stories[index];
         final isRecommended = widget.recommendedIds.contains(story.id);
 
         final profile = widget.profileAsync.value;
@@ -144,7 +146,7 @@ class _FeaturedStoryCarouselState extends ConsumerState<FeaturedStoryCarousel> {
                           label: 'UPGRADE',
                           textColor: MythicColors.bronze,
                           onPressed: () {
-                            context.pushNamed('profile');
+                            context.pushNamed(AppRoute.profile.name);
                           },
                         ),
                         backgroundColor: const Color(0xFF1E1E2C),
@@ -187,26 +189,29 @@ class _FeaturedStoryCarouselState extends ConsumerState<FeaturedStoryCarousel> {
                       ),
                 ),
               if (isLocked)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: MythicColors.scrim,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.lock,
-                          color: MythicColors.bronze,
-                          size: 48,
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        Text(
-                          'PATRON ONLY',
-                          style: AppTypography.label.copyWith(letterSpacing: 2),
-                        ),
-                      ],
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: MythicColors.scrim,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.lock,
+                            color: MythicColors.bronze,
+                            size: 48,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'PATRON ONLY',
+                            style:
+                                AppTypography.label.copyWith(letterSpacing: 2),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

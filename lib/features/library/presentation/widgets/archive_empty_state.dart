@@ -5,7 +5,14 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/mythic_colors.dart';
 
 class ArchiveEmptyState extends StatelessWidget {
-  const ArchiveEmptyState({super.key});
+  const ArchiveEmptyState({
+    super.key,
+    this.title = 'ARCHIVE EMPTY',
+    this.subtitle = 'No stories found in this temporal coordinate.',
+  });
+
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +34,14 @@ class ArchiveEmptyState extends StatelessWidget {
               .shimmer(duration: 3.seconds),
           const SizedBox(height: 16),
           Text(
-            'TIMELINE EMPTY',
+            title,
             style: AppTypography.headingMd.copyWith(
               color: MythicColors.stoneGray,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'No stories found in this temporal coordinate.',
+            subtitle,
             style: AppTypography.uiBodySm,
           ),
         ],
