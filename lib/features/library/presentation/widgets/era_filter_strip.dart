@@ -68,7 +68,9 @@ class EraFilterStrip extends ConsumerWidget {
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeOutCubic,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 0,),
+                        horizontal: 20,
+                        vertical: 0,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? filterColor.withValues(alpha: 0.15)

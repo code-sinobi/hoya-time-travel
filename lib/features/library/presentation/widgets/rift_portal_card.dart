@@ -93,7 +93,8 @@ class RiftPortalCard extends StatelessWidget {
                   bottom: 0,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(32),),
+                      bottom: Radius.circular(32),
+                    ),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(

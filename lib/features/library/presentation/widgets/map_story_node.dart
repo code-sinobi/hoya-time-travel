@@ -43,8 +43,9 @@ class MapStoryNode extends StatelessWidget {
                     ),
                   )
                       .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true),)
+                        onPlay: (controller) =>
+                            controller.repeat(reverse: true),
+                      )
                       .scale(
                         begin: const Offset(1, 1),
                         end: const Offset(1.1, 1.1),
@@ -74,8 +75,9 @@ class MapStoryNode extends StatelessWidget {
                     ),
                   )
                       .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true),)
+                        onPlay: (controller) =>
+                            controller.repeat(reverse: true),
+                      )
                       .scale(
                         begin: const Offset(1, 1),
                         end: const Offset(0.7, 0.7),

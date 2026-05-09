@@ -19,26 +19,45 @@ class ModeTabSwitcher extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-          color: MythicColors.surface1.withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: MythicColors.fluxCyan.withValues(alpha: 0.2),
+        color: MythicColors.surface1.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: MythicColors.fluxCyan.withValues(alpha: 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: MythicColors.fluxCyan.withValues(alpha: 0.05),
+            blurRadius: 10,
+            spreadRadius: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: MythicColors.fluxCyan.withValues(alpha: 0.05),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],),
+        ],
+      ),
       child: Row(
         children: [
           _buildTab(
-              context, ref, ArchiveMode.map, 'STAR MAP', Icons.public, mode,),
-          _buildTab(context, ref, ArchiveMode.timeline, 'CHRONO',
-              Icons.linear_scale, mode,),
-          _buildTab(context, ref, ArchiveMode.vault, 'RIFTS',
-              Icons.blur_circular, mode,),
+            context,
+            ref,
+            ArchiveMode.map,
+            'STAR MAP',
+            Icons.public,
+            mode,
+          ),
+          _buildTab(
+            context,
+            ref,
+            ArchiveMode.timeline,
+            'CHRONO',
+            Icons.linear_scale,
+            mode,
+          ),
+          _buildTab(
+            context,
+            ref,
+            ArchiveMode.vault,
+            'RIFTS',
+            Icons.blur_circular,
+            mode,
+          ),
         ],
       ),
     );

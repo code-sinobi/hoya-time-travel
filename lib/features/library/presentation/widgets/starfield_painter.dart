@@ -55,12 +55,18 @@ class StarfieldPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), radius, paint);
       canvas.drawRect(
         Rect.fromCenter(
-            center: Offset(x, y), width: radius * 6, height: radius * 0.5,),
+          center: Offset(x, y),
+          width: radius * 6,
+          height: radius * 0.5,
+        ),
         paint,
       );
       canvas.drawRect(
         Rect.fromCenter(
-            center: Offset(x, y), width: radius * 0.5, height: radius * 6,),
+          center: Offset(x, y),
+          width: radius * 0.5,
+          height: radius * 6,
+        ),
         paint,
       );
     }
