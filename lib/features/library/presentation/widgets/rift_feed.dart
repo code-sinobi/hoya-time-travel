@@ -38,7 +38,7 @@ class _RiftFeedState extends ConsumerState<RiftFeed> {
         if (stories.isEmpty) {
           return const Center(
             child: Text(
-              'No rifts detected in this sector.',
+              'No rifts detected in this region.',
               style: TextStyle(color: MythicColors.stoneGray),
             ),
           );

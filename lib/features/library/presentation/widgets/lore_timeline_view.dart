@@ -37,7 +37,7 @@ class LoreTimelineView extends ConsumerWidget {
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // Connecting Neon Wire
+                // Connecting Temporal Wire
                 if (!isLast)
                   Positioned(
                     left: 34,
